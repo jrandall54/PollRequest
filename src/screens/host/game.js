@@ -231,7 +231,7 @@ export async function renderHostGame(params) {
             </span>
           </div>
 
-          <div class="question-text" style="font-size:1.25rem;margin-bottom:1.5rem;text-align:left;">
+          <div class="question-text" style="font-size:1.25rem;margin-bottom:1rem;text-align:left;">
             ${escapeHtml(question.text)}
           </div>
 
@@ -260,12 +260,12 @@ export async function renderHostGame(params) {
           </div>
 
           ${question.explanation ? `
-            <div class="results-explanation" style="margin-top:1.5rem;">
+            <div class="results-explanation" style="margin-top:1rem;">
               <strong>Explanation:</strong> ${escapeHtml(question.explanation)}
             </div>
           ` : ''}
 
-          <div style="display:flex;justify-content:center;gap:1rem;margin-top:2rem;">
+          <div style="display:flex;justify-content:center;gap:1rem;margin-top:1rem;">
             ${isLast ? `
               <button class="btn btn--primary btn--xl" id="btn-final-podium">
                 ${getUiIcon('trophy', 22)} Show Final Results
@@ -288,7 +288,6 @@ export async function renderHostGame(params) {
     document.getElementById('btn-next-question')?.addEventListener('click', async () => {
       const nextQ = questions[qIdx + 1];
       if (nextQ) {
-        currentView = 'question';
         await advanceQuestion(sessionId, nextQ.timeLimit || 30);
       }
     });
