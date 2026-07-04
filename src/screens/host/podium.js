@@ -6,7 +6,7 @@
 import router from '../../router.js';
 import { getIconSvg } from '../../utils/constants.js';
 import { getLeaderboard } from '../../services/scoring-service.js';
-import { endSession, listenToSession, cleanupListeners } from '../../services/session-service.js';
+import { endSession, listenToSession, cleanupListeners, getSessionResponses } from '../../services/session-service.js';
 import { updateStudentStats, getProfile } from '../../services/student-service.js';
 import { launchConfetti } from '../../components/confetti.js';
 
@@ -34,6 +34,39 @@ export async function renderPodium(params) {
   async function showPodium(data) {
     const leaderboard = getLeaderboard(data.players || {});
     const top3 = leaderboard.slice(0, 3);
+
+    // Update global student statistics
+    try {
+      const responses = await getSessionResponses(sessionId);
+      for (const uid of Object.keys(data.players || {})) {
+        const pResponses = responses.filter(r => r.studentUid === uid).sort((a, b) => a.questionIndex - b.questionIndex);
+        
+        let currentStreak = 0;
+        let bestStreak = 0;
+        let totalResponseTime = 0;
+        
+        for (const r of pResponses) {
+          if (r.correct) {
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
+          } else {
+            currentStreak = 0;
+          }
+          totalResponseTime += (r.responseTime || 0);
+        }
+
+        await updateStudentStats(uid, {
+          answered: pResponses.length,
+          correct: pResponses.filter(r => r.correct).length,
+          points: data.players[uid]?.points || 0,
+          totalResponseTime,
+          finalStreak: currentStreak,
+          bestStreak,
+        });
+      }
+    } catch (e) {
+      console.warn('Could not update student stats:', e);
+    }
 
     // End the session
     try {

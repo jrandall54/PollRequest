@@ -13,22 +13,25 @@ import { arrayToCsv, downloadFile } from '../utils/helpers.js';
  */
 export async function getStudentAnalytics() {
   const students = await getAllStudents();
-  return students.map(s => ({
-    uid: s.uid,
-    name: s.name,
-    icon: s.icon,
-    accuracy: s.stats?.totalAnswered > 0
-      ? Math.round((s.stats.totalCorrect / s.stats.totalAnswered) * 100)
-      : 0,
-    totalAnswered: s.stats?.totalAnswered || 0,
-    totalCorrect: s.stats?.totalCorrect || 0,
-    totalPoints: s.stats?.totalPoints || 0,
-    avgResponseTime: s.stats?.averageResponseTime || 0,
-    sessionsAttended: s.stats?.sessionsAttended || 0,
-    currentStreak: s.stats?.currentStreak || 0,
-    bestStreak: s.stats?.bestStreak || 0,
-    lastSeen: s.lastSeen,
-  })).sort((a, b) => b.totalPoints - a.totalPoints);
+  return students
+    .filter(s => s.stats?.totalAnswered > 0)
+    .map(s => ({
+      uid: s.uid,
+      name: s.name,
+      icon: s.icon,
+      accuracy: s.stats?.totalAnswered > 0
+        ? Math.round((s.stats.totalCorrect / s.stats.totalAnswered) * 100)
+        : 0,
+      totalAnswered: s.stats?.totalAnswered || 0,
+      totalCorrect: s.stats?.totalCorrect || 0,
+      totalPoints: s.stats?.totalPoints || 0,
+      avgResponseTime: s.stats?.averageResponseTime || 0,
+      sessionsAttended: s.stats?.sessionsAttended || 0,
+      currentStreak: s.stats?.currentStreak || 0,
+      bestStreak: s.stats?.bestStreak || 0,
+      lastSeen: s.lastSeen,
+    }))
+    .sort((a, b) => b.totalPoints - a.totalPoints);
 }
 
 /**

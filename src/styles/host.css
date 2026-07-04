@@ -184,6 +184,7 @@
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  min-height: 0;
 }
 
 .question-text {
@@ -191,12 +192,16 @@
   font-weight: 700;
   line-height: 1.3;
   text-align: center;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .question-code-wrap {
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .question-answers-grid {
