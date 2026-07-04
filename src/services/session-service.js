@@ -167,7 +167,7 @@ export async function advanceQuestion(sessionId, timeLimit) {
     const snapshot = await getDoc(sessionRef);
     const data = snapshot.data();
 
-    const nextIndex = (data.currentQuestionIndex || -1) + 1;
+    const nextIndex = (data.currentQuestionIndex ?? -1) + 1;
     const timerEnd = Timestamp.fromDate(
       new Date(Date.now() + timeLimit * 1000)
     );
