@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/ars/',
+  base: '/PollRequest/',
   build: {
     outDir: 'dist',
     sourcemap: false,
