@@ -239,7 +239,7 @@ export async function renderPlayerGame(params) {
   function renderResultView(data, qIdx) {
     clearTimerInterval();
     const question = questions[qIdx];
-    const correctChoices = question?.choices.filter(c => c.isCorrect).map(c => c.text).join(' and ');
+    const correctChoices = (question?.choices || []).filter(c => c.isCorrect).map(c => c.text).join(' and ');
     const correctHtml = correctChoices ? `
       <div style="margin: 1.5rem 0 0 0; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md); border-left: 4px solid var(--success); text-align: left;">
         <div class="text-sm text-muted" style="margin-bottom: 0.25rem;">Correct Answer</div>
@@ -249,7 +249,10 @@ export async function renderPlayerGame(params) {
 
     if (currentView === 'result' && document.querySelector('.player-result')) {
       // Already showing result from submit, just update the message and inject the answer
-      const waitMsg = document.querySelector('.player-result .text-muted:last-child');
+      const resultScreen = document.querySelector('.player-result');
+      const waitMsgs = resultScreen.querySelectorAll('.text-muted');
+      const waitMsg = waitMsgs[waitMsgs.length - 1]; // safely get the last text-muted element
+      
       if (waitMsg && !document.getElementById('injected-correct')) {
         waitMsg.textContent = 'Next question coming up...';
         waitMsg.insertAdjacentHTML('beforebegin', `<div id="injected-correct" style="width: 100%; max-width: 400px; margin: 0 auto;">${correctHtml}</div>`);
