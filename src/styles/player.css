@@ -1,0 +1,385 @@
+/* ============================================================
+   PollRequest — Player Styles
+   Mobile-optimized layouts for student devices
+   ============================================================ */
+
+/* ── Player Layout ──────────────────────────────────────────── */
+.player-layout {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.player-header__brand {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.player-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ── Join Screen ────────────────────────────────────────────── */
+.join-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.join-screen__logo {
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+}
+
+.join-screen__subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.join-screen__form {
+  width: 100%;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.join-code-input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-align: center;
+  padding: 1rem;
+  border: 3px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease;
+  width: 100%;
+}
+
+.join-code-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px var(--accent-primary-soft);
+}
+
+.join-code-input::placeholder {
+  color: var(--text-tertiary);
+  letter-spacing: 0.15em;
+}
+
+/* ── Profile Setup ──────────────────────────────────────────── */
+.profile-setup {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.profile-setup__title {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.profile-setup__subtitle {
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.profile-name-input {
+  width: 100%;
+  max-width: 350px;
+  padding: 1rem 1.25rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 3px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  text-align: center;
+  transition: border-color 0.2s ease;
+  margin-bottom: 1.5rem;
+}
+
+.profile-name-input:focus {
+  border-color: var(--accent-primary);
+}
+
+.profile-name-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.profile-icon-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.profile-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  border-radius: var(--radius-full);
+  margin: 1.5rem 0;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.profile-preview__icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--accent-primary);
+}
+
+/* ── Waiting Room ───────────────────────────────────────────── */
+.waiting-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.waiting-screen__icon {
+  width: 6rem;
+  height: 6rem;
+  color: var(--accent-primary);
+  margin-bottom: 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.waiting-screen__name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.waiting-screen__message {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+}
+
+.waiting-dots {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-left: 0.25rem;
+}
+
+.waiting-dots span {
+  width: 6px;
+  height: 6px;
+  background: var(--text-tertiary);
+  border-radius: 50%;
+  animation: lobbyDot 1.4s ease infinite;
+}
+
+.waiting-dots span:nth-child(2) { animation-delay: 0.2s; }
+.waiting-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Answer Screen (Mobile) ─────────────────────────────────── */
+.answer-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.answer-screen__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.answer-screen__question-num {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.answer-screen__timer-badge {
+  padding: 0.375rem 0.75rem;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.answer-screen__timer-badge--warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.answer-screen__timer-badge--danger {
+  background: var(--error-soft);
+  color: var(--error);
+  animation: pulse 0.5s ease infinite;
+}
+
+.answer-screen__question {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.answer-screen__buttons {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.answer-screen__submit-info {
+  text-align: center;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* ── Player Result Screen ───────────────────────────────────── */
+.player-result {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.player-result__icon {
+  width: 5rem;
+  height: 5rem;
+  margin-bottom: 1rem;
+}
+
+.player-result__icon--correct {
+  color: var(--success);
+  animation: bounceIn 0.5s ease;
+}
+
+.player-result__icon--incorrect {
+  color: var(--error);
+  animation: shake 0.4s ease;
+}
+
+.player-result__title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.player-result__title--correct {
+  color: var(--success);
+}
+
+.player-result__title--incorrect {
+  color: var(--error);
+}
+
+.player-result__points {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 3rem;
+  font-weight: 800;
+  animation: popIn 0.5s ease;
+}
+
+.player-result__points-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+}
+
+.player-result__streak {
+  padding: 0.5rem 1rem;
+  background: var(--accent-primary-soft);
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.player-result__rank {
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+}
+
+.player-result__rank strong {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+}
+
+/* ── Mobile Answer Button Overrides ─────────────────────────── */
+@media (max-width: 640px) {
+  .answer-btn {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    min-height: 3.5rem;
+  }
+
+  .answer-btn__label {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1.125rem;
+  }
+}
+
+/* ── Large Touch Targets ────────────────────────────────────── */
+@media (pointer: coarse) {
+  .answer-btn {
+    min-height: 56px;
+  }
+
+  .btn {
+    min-height: 48px;
+  }
+
+  .join-code-input {
+    min-height: 64px;
+  }
+}
