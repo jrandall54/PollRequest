@@ -6,7 +6,7 @@
 import { db } from '../firebase.js';
 import {
   collection, doc, getDocs, getDoc, addDoc, updateDoc,
-  deleteDoc, query, where, orderBy, serverTimestamp, writeBatch
+  deleteDoc, query, where, orderBy, serverTimestamp, writeBatch, documentId
 } from 'firebase/firestore';
 import { DEFAULT_TIME_LIMIT } from '../utils/constants.js';
 import { generateId } from '../utils/helpers.js';
@@ -52,7 +52,7 @@ export async function getQuestionsByIds(questionIds) {
     const results = [];
     for (let i = 0; i < questionIds.length; i += 30) {
       const batch = questionIds.slice(i, i + 30);
-      const q = query(collection(db, COLLECTION), where('__name__', 'in', batch));
+      const q = query(collection(db, COLLECTION), where(documentId(), 'in', batch));
       const snapshot = await getDocs(q);
       snapshot.docs.forEach(d => results.push({ id: d.id, ...d.data() }));
     }
