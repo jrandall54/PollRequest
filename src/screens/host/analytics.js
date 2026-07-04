@@ -314,7 +314,7 @@ export async function renderAnalytics() {
     document.querySelectorAll('.session-row').forEach(row => {
       row.addEventListener('click', async () => {
         const sessionId = row.dataset.id;
-        const detailsRow = document.getElementById(\`details-\${sessionId}\`);
+        const detailsRow = document.getElementById(`details-${sessionId}`);
         const icon = row.querySelector('.expand-icon');
         
         if (detailsRow.style.display === 'none') {
@@ -342,14 +342,14 @@ export async function renderAnalytics() {
               
               const qRows = Object.values(byQuestion).map(({q, attempts, correct}) => {
                 const rate = attempts > 0 ? Math.round((correct/attempts)*100) : 0;
-                return \`
+                return `
                   <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
-                    <div style="flex:1;">\${escapeHtml(q ? q.text : 'Unknown Question')}</div>
+                    <div style="flex:1;">${escapeHtml(q ? q.text : 'Unknown Question')}</div>
                     <div style="width:100px;text-align:right;">
-                      <span style="color:\${rate >= 70 ? 'var(--success)' : rate >= 40 ? 'var(--warning)' : 'var(--error)'};font-weight:600;">\${rate}%</span>
+                      <span style="color:${rate >= 70 ? 'var(--success)' : rate >= 40 ? 'var(--warning)' : 'var(--error)'};font-weight:600;">${rate}%</span>
                     </div>
                   </div>
-                \`;
+                `;
               }).join('');
 
               contentDiv.innerHTML = qRows || '<div class="text-muted">No questions answered in this session.</div>';
