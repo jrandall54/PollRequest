@@ -27,7 +27,7 @@ export async function renderHostGame(params) {
   let questions = [];
   let responses = [];
   let timer = null;
-  let currentView = 'question'; // 'question' | 'results' | 'leaderboard'
+  let currentView = null; // 'question' | 'results' | 'leaderboard'
 
   app.innerHTML = `<div class="flex-center" style="min-height:100vh;"><div class="spinner spinner--lg"></div></div>`;
 

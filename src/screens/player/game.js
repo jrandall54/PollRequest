@@ -9,6 +9,7 @@ import { listenToSession, submitAnswer } from '../../services/session-service.js
 import { getQuestionsByIds } from '../../services/question-service.js';
 import { calculatePoints, checkAnswer } from '../../services/scoring-service.js';
 import { loadSavedIdentity } from '../../services/student-service.js';
+import { renderCodeBlock } from '../../components/code-block.js';
 import { userStore, sessionStore } from '../../state.js';
 import { showToast } from '../../utils/helpers.js';
 
@@ -102,6 +103,11 @@ export async function renderPlayerGame(params) {
         </div>
 
         <div class="answer-screen__question">${escapeHtml(question.text)}</div>
+        ${question.codeSnippet ? `
+          <div class="question-code-wrap" style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+            ${renderCodeBlock(question.codeSnippet, question.codeLanguage)}
+          </div>
+        ` : ''}
         ${isMulti ? '<div class="text-muted text-sm" style="margin-bottom:0.25rem;">Tap all correct answers</div>' : ''}
 
         <div class="answer-screen__buttons" id="answer-buttons">
