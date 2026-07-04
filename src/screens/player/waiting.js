@@ -23,6 +23,11 @@ export async function renderWaiting(params) {
   let identity = null;
   if (userStore.state.name && userStore.state.icon) {
     identity = { uid: userStore.state.uid, name: userStore.state.name, icon: userStore.state.icon };
+    try {
+      await joinSession(sessionId, identity);
+    } catch (e) {
+      console.warn('Could not join session:', e);
+    }
   } else {
     identity = loadSavedIdentity();
     if (identity) {

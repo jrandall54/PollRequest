@@ -238,16 +238,26 @@ export async function renderPlayerGame(params) {
 
   function renderResultView(data, qIdx) {
     clearTimerInterval();
+    const question = questions[qIdx];
+    const correctChoices = question?.choices.filter(c => c.isCorrect).map(c => c.text).join(' and ');
+    const correctHtml = correctChoices ? `
+      <div style="margin: 1.5rem 0 0 0; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md); border-left: 4px solid var(--success); text-align: left;">
+        <div class="text-sm text-muted" style="margin-bottom: 0.25rem;">Correct Answer</div>
+        <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">${escapeHtml(correctChoices)}</div>
+      </div>
+    ` : '';
 
     if (currentView === 'result' && document.querySelector('.player-result')) {
-      // Already showing result from submit, just update the message
+      // Already showing result from submit, just update the message and inject the answer
       const waitMsg = document.querySelector('.player-result .text-muted:last-child');
-      if (waitMsg) waitMsg.textContent = 'Next question coming up...';
+      if (waitMsg && !document.getElementById('injected-correct')) {
+        waitMsg.textContent = 'Next question coming up...';
+        waitMsg.insertAdjacentHTML('beforebegin', `<div id="injected-correct" style="width: 100%; max-width: 400px; margin: 0 auto;">${correctHtml}</div>`);
+      }
       return;
     }
 
     // Player didn't answer in time
-    const question = questions[qIdx];
     app.innerHTML = `
       <div class="player-result screen">
         <div class="player-result__icon player-result__icon--incorrect">
@@ -256,6 +266,9 @@ export async function renderPlayerGame(params) {
         <h2 class="player-result__title player-result__title--incorrect">Time's Up!</h2>
         <div class="player-result__points">+0</div>
         <div class="player-result__points-label">points</div>
+        
+        <div style="width: 100%; max-width: 400px; margin: 0 auto;">${correctHtml}</div>
+        
         <div class="text-muted" style="margin-top:1.5rem;">Next question coming up...</div>
       </div>
     `;

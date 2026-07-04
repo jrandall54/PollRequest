@@ -39,7 +39,10 @@ export function renderBarChart(container, options = {}) {
                   background:var(--answer-${d.color || 'a'});
                   ${animate ? `animation: barGrow 0.8s ease ${i * 0.1}s forwards; width:${pct}%;` : ''}
                 ">
-                  ${d.isCorrect ? '<span class="results-correct-label" style="margin-left:auto;font-size:0.75rem;">Correct</span>' : ''}
+                  ${d.isCorrect ? `
+                    <span style="margin-left:auto;display:flex;align-items:center;color:white;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </span>` : ''}
                 </div>
               </div>
               <div class="results-bar__count">

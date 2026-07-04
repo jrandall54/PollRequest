@@ -239,6 +239,16 @@ export async function renderHostGame(params) {
             <div>
               <h4 style="margin-bottom:1rem;">Answer Distribution</h4>
               <div id="results-chart"></div>
+              
+              <div class="correct-answer-callout" style="margin-top:1.5rem;padding:1rem;background:var(--success-soft);color:var(--success);border-radius:var(--radius-md);border:1px solid var(--success);">
+                <strong style="font-size:1rem;display:flex;align-items:center;gap:0.5rem;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Correct Answer:
+                </strong>
+                <div style="margin-top:0.5rem;font-size:1.1rem;font-weight:700;">
+                  ${question.choices.filter(c => c.isCorrect).map(c => escapeHtml(c.text)).join(' <span style="opacity:0.5;margin:0 0.5rem;">and</span> ')}
+                </div>
+              </div>
             </div>
 
             <div>
