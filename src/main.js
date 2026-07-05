@@ -55,8 +55,24 @@ function init() {
   router.addRoute('/player/waiting/:id', (params) => renderWaiting(params));
   router.addRoute('/player/game/:id', (params) => renderPlayerGame(params));
 
-  // ── Navigation Guard ────────────────────────────────────
-  router.beforeEach((to) => {
+  // ── Navigation Guard & Cleanup ───────────────────────────
+  router.beforeEach((to, from) => {
+    // Player cleanup logic (prevent ghosting)
+    if (from && (from.startsWith('/player/waiting') || from.startsWith('/player/game'))) {
+      if (!to.startsWith('/player/waiting') && !to.startsWith('/player/game')) {
+        // Navigating away from session
+        const sessionId = from.split('/')[3]; // e.g. /player/waiting/abc1234
+        import('./state.js').then(({ userStore }) => {
+          const uid = userStore.state.uid;
+          if (uid && sessionId) {
+            import('./services/session-service.js').then(({ leaveSession }) => {
+              leaveSession(sessionId, uid);
+            });
+          }
+        });
+      }
+    }
+
     // Protect host routes (except login)
     if (to.startsWith('/host/') && to !== '/host/login') {
       const isHost = sessionStorage.getItem('pollrequest_host') === 'true';
@@ -66,6 +82,22 @@ function init() {
       }
     }
     return true;
+  });
+
+  // Handle page reload/close cleanup
+  window.addEventListener('beforeunload', () => {
+    const currentPath = router.getCurrentPath();
+    if (currentPath.startsWith('player/waiting') || currentPath.startsWith('player/game')) {
+      const sessionId = currentPath.split('/')[2]; // e.g. player/waiting/abc1234
+      const uid = localStorage.getItem('pollrequest_uid');
+      if (uid && sessionId) {
+        // Use sendBeacon or standard fetch if available, but since we are relying on Firestore, 
+        // we import and call leaveSession and hope the network request fires before tab dies.
+        import('./services/session-service.js').then(({ leaveSession }) => {
+          leaveSession(sessionId, uid);
+        });
+      }
+    }
   });
 
   // Start routing

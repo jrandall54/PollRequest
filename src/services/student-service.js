@@ -153,6 +153,23 @@ export function loadSavedIdentity() {
 }
 
 /**
+ * Clear the local cached identity and force sign out
+ * This ensures the next login gets a brand new Anonymous UID
+ * WARNING: If logged in as a Host, this will sign them out of their Host account too.
+ */
+export async function clearLocalIdentity() {
+  localStorage.removeItem('pollrequest_uid');
+  localStorage.removeItem('pollrequest_name');
+  localStorage.removeItem('pollrequest_icon');
+  
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error('Error signing out:', e);
+  }
+}
+
+/**
  * Clear saved identity (logout)
  */
 export function clearSavedIdentity() {

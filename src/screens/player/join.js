@@ -6,7 +6,7 @@
 import router from '../../router.js';
 import { getUiIcon, getIconSvg } from '../../utils/constants.js';
 import { findSessionByCode } from '../../services/session-service.js';
-import { loadSavedIdentity } from '../../services/student-service.js';
+import { loadSavedIdentity, clearLocalIdentity } from '../../services/student-service.js';
 import { showToast } from '../../utils/helpers.js';
 
 export async function renderPlayerJoin() {
@@ -94,10 +94,9 @@ export async function renderPlayerJoin() {
       if (mode === 'saved') {
         router.navigate(`/player/waiting/${session.id}`);
       } else if (mode === 'new') {
-        // Clear cached identity locally to force a new one
-        localStorage.removeItem('pollrequest_uid');
-        localStorage.removeItem('pollrequest_name');
-        localStorage.removeItem('pollrequest_icon');
+        // Clear cached identity locally and sign out of Firebase 
+        // to force a brand new Anonymous UID
+        await clearLocalIdentity();
         // We do NOT clear userStore here because it will be handled by profile-setup / waiting logic,
         // but we can just route to profile screen to set up a new identity
         router.navigate(`/player/profile/${session.id}`);
