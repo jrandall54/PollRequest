@@ -643,7 +643,8 @@
 }
 
 .live-editor-textarea,
-.live-editor-pre {
+.live-editor-pre,
+.live-editor-pre code {
   margin: 0 !important;
   padding: 1rem !important;
   border: 0 !important;
@@ -681,14 +682,6 @@
   z-index: 1;
   pointer-events: none;
   min-height: 120px;
-}
-
-.live-editor-pre code {
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  padding: 0 !important;
-  background: transparent !important;
 }
 
 /* ── Dual Code Snippets Layout ──────────────────────────────── */

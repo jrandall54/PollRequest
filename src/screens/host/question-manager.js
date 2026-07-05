@@ -195,7 +195,7 @@ export async function renderQuestionManager() {
           <div class="input-group" id="qf-code-main-container" style="margin: 0; width: 100%; display: ${hasMain ? 'flex' : 'none'};">
             <label>Main Method (optional)</label>
             <div class="live-editor-container">
-              <textarea class="live-editor-textarea" id="qf-code-main" spellcheck="false" placeholder="public static void main(String[] args) { ... }">${existing?.codeSnippetMain || ''}</textarea>
+              <textarea class="live-editor-textarea" id="qf-code-main" spellcheck="false" placeholder="public static void main(String[] args) { ... }">${existing?.codeSnippetMain || 'public static void main(String[] args) {\n    \n}'}</textarea>
               <pre class="live-editor-pre" aria-hidden="true"><code class="language-java" id="qf-code-main-highlight"></code></pre>
             </div>
           </div>

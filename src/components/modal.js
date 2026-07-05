@@ -148,7 +148,12 @@ export function showModal(options = {}) {
         user-select: text;
         -webkit-user-select: text;
       }
-      .modal__content--large { max-width: 700px; }
+      .modal__content--large { 
+        max-width: 900px;
+        resize: both;
+        min-width: 480px;
+        min-height: 400px;
+      }
       .modal__content--small { max-width: 360px; }
       .modal__header {
         display: flex;
