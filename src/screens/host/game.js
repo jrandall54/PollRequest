@@ -126,11 +126,11 @@ export async function renderHostGame(params) {
           </div>
         </div>
 
-        <div style="display:flex;justify-content:center;gap:1rem;padding:1rem;">
-          <button class="btn btn--secondary" id="btn-pause">
-            ${getUiIcon('pause', 18)} Pause
+        <div style="position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.75rem; z-index: 100;">
+          <button class="btn btn--secondary" id="btn-pause" style="padding: 0.625rem 1rem; font-size: 0.875rem;">
+            ${getUiIcon('pause', 16)} Pause
           </button>
-          <button class="btn btn--primary" id="btn-show-results">
+          <button class="btn btn--primary" id="btn-show-results" style="padding: 0.625rem 1rem; font-size: 0.875rem;">
             Skip to Results
           </button>
         </div>
@@ -290,14 +290,14 @@ export async function renderHostGame(params) {
             </div>
           ` : ''}
 
-          <div style="display:flex;justify-content:center;gap:1rem;margin-top:1rem;">
+          <div style="position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.75rem; z-index: 100;">
             ${isLast ? `
-              <button class="btn btn--primary btn--xl" id="btn-final-podium">
-                ${getUiIcon('trophy', 22)} Show Final Results
+              <button class="btn btn--primary" id="btn-final-podium" style="padding: 0.75rem 1.25rem; font-size: 1rem; box-shadow: var(--shadow-lg);">
+                ${getUiIcon('trophy', 20)} Show Final Results
               </button>
             ` : `
-              <button class="btn btn--primary btn--xl" id="btn-next-question">
-                Next Question ${getUiIcon('skip', 22)}
+              <button class="btn btn--primary" id="btn-next-question" style="padding: 0.75rem 1.25rem; font-size: 1rem; box-shadow: var(--shadow-lg);">
+                Next Question ${getUiIcon('skip', 20)}
               </button>
             `}
           </div>

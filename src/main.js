@@ -75,6 +75,7 @@ function init() {
 // ── Global Theme Switcher ───────────────────────────────────
 function createGlobalThemeSwitcher() {
   const container = document.createElement('div');
+  container.id = 'global-theme-switcher';
   container.style.cssText = `
     position: fixed;
     bottom: 1.5rem;
@@ -90,6 +91,15 @@ function createGlobalThemeSwitcher() {
   import('./components/theme-switcher.js').then(({ createThemeSwitcher }) => {
     createThemeSwitcher(container);
   });
+  
+  // Hide on game screens
+  const style = document.createElement('style');
+  style.textContent = `
+    body:has(.question-screen, .results-screen, .podium-screen, .player-result) #global-theme-switcher {
+      display: none !important;
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 // ── Firebase Warning Banner ─────────────────────────────────
