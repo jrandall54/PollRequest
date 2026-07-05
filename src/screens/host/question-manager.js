@@ -100,22 +100,22 @@ export async function renderQuestionManager() {
               </div>
 
               ${banks.map(bank => `
-                <div class="card" style="margin-top: 1.5rem; padding: 0; overflow: hidden; border: 1px solid var(--border-color);">
-                  <div style="padding: 1rem 1.5rem; background: var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
-                    <div style="display:flex; align-items:center; gap:0.75rem;">
-                      <input type="checkbox" class="bank-select-all" data-bank="${escapeHtml(bank)}" style="width:1.1rem;height:1.1rem;accent-color:var(--accent-primary);" title="Select all in ${escapeHtml(bank)}" />
-                      <h3 style="margin:0;font-size:1.1rem;">${escapeHtml(bank)}</h3>
+                <div class="card" style="margin-top: 2rem; padding: 0; overflow: hidden; border: 1px solid var(--border-color);">
+                  <div style="padding: 1.25rem 1.5rem; background: var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                      <input type="checkbox" class="bank-select-all custom-checkbox" data-bank="${escapeHtml(bank)}" title="Select all in ${escapeHtml(bank)}" />
+                      <h3 style="margin:0;font-size:1.15rem;font-weight:600;">${escapeHtml(bank)}</h3>
                       <span class="badge badge--neutral">${banksMap[bank].length}</span>
                     </div>
                     <button class="btn btn--ghost btn--icon btn-delete-bank" data-bank="${escapeHtml(bank)}" title="Delete Sub-Bank" style="color:var(--error);">
                       ${getUiIcon('trash', 16)}
                     </button>
                   </div>
-                  <div class="table-wrap">
+                  <div class="table-wrap" style="padding: 0.5rem 1rem 1rem 1rem;">
                     <table class="table">
                       <thead>
                         <tr>
-                          <th style="width: 40px;"></th>
+                          <th style="width: 48px; padding-left: 0.5rem;"></th>
                           <th class="sortable" data-sort="text" style="width:50%;cursor:pointer;">Question ${sortCol === 'text' ? (sortAsc ? '↑' : '↓') : ''}</th>
                           <th class="sortable" data-sort="difficulty" style="cursor:pointer;">Difficulty ${sortCol === 'difficulty' ? (sortAsc ? '↑' : '↓') : ''}</th>
                           <th class="sortable" data-sort="timeLimit" style="cursor:pointer;">Time ${sortCol === 'timeLimit' ? (sortAsc ? '↑' : '↓') : ''}</th>
@@ -125,12 +125,12 @@ export async function renderQuestionManager() {
                       <tbody>
                         ${banksMap[bank].map(q => `
                           <tr data-id="${q.id}">
-                            <td>
-                              <input type="checkbox" class="q-select-cb" data-id="${q.id}" data-bank="${escapeHtml(bank)}" style="width:1.1rem;height:1.1rem;accent-color:var(--accent-primary);" />
+                            <td style="padding-left: 0.5rem;">
+                              <input type="checkbox" class="q-select-cb custom-checkbox" data-id="${q.id}" data-bank="${escapeHtml(bank)}" />
                             </td>
                             <td>
-                              <div style="font-weight:500;">${escapeHtml(q.text.length > 60 ? q.text.substring(0, 60) + '...' : q.text)}</div>
-                              ${q.codeSnippet ? '<span class="badge badge--neutral" style="margin-top:0.25rem;">Has code</span>' : ''}
+                              <div style="font-weight:500;font-size:0.95rem;color:var(--text-primary);">${escapeHtml(q.text.length > 70 ? q.text.substring(0, 70) + '...' : q.text)}</div>
+                              ${q.codeSnippet ? '<span class="badge badge--neutral" style="margin-top:0.35rem;font-size:0.7rem;">Has code</span>' : ''}
                             </td>
                             <td><span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span></td>
                             <td>${q.timeLimit || 30}s</td>

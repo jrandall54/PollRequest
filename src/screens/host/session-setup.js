@@ -85,9 +85,9 @@ export async function renderSessionSetup() {
                   </div>
                   <div style="display:flex;flex-direction:column;gap:0.5rem;">
                     ${banksMap[bank].map(q => `
-                      <label class="session-question-item" data-id="${q.id}">
-                        <input type="checkbox" class="question-checkbox" data-bank="${escapeHtml(bank)}" value="${q.id}" style="width:1.25rem;height:1.25rem;accent-color:var(--accent-primary);" />
-                        <span class="session-question-item__text">
+                      <label class="session-question-item" data-id="${q.id}" style="gap: 1rem; padding: 0.75rem 1rem;">
+                        <input type="checkbox" class="question-checkbox custom-checkbox" data-bank="${escapeHtml(bank)}" value="${q.id}" />
+                        <span class="session-question-item__text" style="flex:1;">
                           ${escapeHtml(q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text)}
                         </span>
                         <div class="session-question-item__meta">
