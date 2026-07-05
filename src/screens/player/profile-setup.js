@@ -6,9 +6,10 @@
 import router from '../../router.js';
 import { getIconSvg } from '../../utils/constants.js';
 import { createIconPicker } from '../../components/icon-picker.js';
-import { initAuth, saveProfile, reclaimProfile } from '../../services/student-service.js';
+import { initAuth, saveProfile, reclaimProfile, forceNewIdentity } from '../../services/student-service.js';
 import { joinSession } from '../../services/session-service.js';
 import { showToast } from '../../utils/helpers.js';
+import { userStore } from '../../state.js';
 
 export async function renderProfileSetup(params) {
   const app = document.getElementById('app');
@@ -127,6 +128,10 @@ export async function renderProfileSetup(params) {
       const reclaimed = await reclaimProfile(name, selectedIcon);
       if (reclaimed) {
         uid = reclaimed.uid;
+      } else if (userStore.state.name && (userStore.state.name !== name || userStore.state.icon !== selectedIcon)) {
+        // If we are replacing an existing logged in identity with a brand new one,
+        // force a new UID so they don't inherit the previous identity's stats
+        uid = await forceNewIdentity();
       }
 
       // Join the session FIRST to validate name uniqueness

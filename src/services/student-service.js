@@ -38,6 +38,16 @@ export async function initAuth() {
 }
 
 /**
+ * Force a new anonymous authentication (used when creating a totally new identity 
+ * to avoid inheriting stats from the previous anonymous session)
+ */
+export async function forceNewIdentity() {
+  await auth.signOut();
+  const result = await signInAnonymously(auth);
+  return result.user.uid;
+}
+
+/**
  * Get the current user's profile from Firestore
  */
 export async function getProfile(uid) {
