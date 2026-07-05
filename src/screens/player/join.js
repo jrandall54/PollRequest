@@ -38,8 +38,8 @@ export async function renderPlayerJoin() {
         />
         ${saved ? `
           <button class="btn btn--primary btn--lg btn--full" id="btn-join-saved" style="display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-            ${getIconSvg(saved.icon, 20)}
             <span>Continue as ${escapeHtml(saved.name)}</span>
+            ${getIconSvg(saved.icon, 20)}
           </button>
           <button class="btn btn--secondary btn--lg btn--full" id="btn-join-new" style="margin-top:0.75rem;">
             Join as someone else
