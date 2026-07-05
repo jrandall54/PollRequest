@@ -36,6 +36,9 @@ export function parseQuestionMarkdown(markdown) {
 function parseSingleQuestion(section) {
   const lines = section.split('\n');
   const question = {
+    title: null,
+    type: 'Multiple Choice',
+    tags: [],
     text: '',
     codeSnippet: null,
     codeLanguage: null,
@@ -62,6 +65,9 @@ function parseSingleQuestion(section) {
       if (metaMatch) {
         const [, key, value] = metaMatch;
         switch (key.toLowerCase()) {
+          case 'title': question.title = value.trim(); break;
+          case 'type': question.type = value.trim(); break;
+          case 'tags': question.tags = value.split(',').map(t => t.trim()).filter(Boolean); break;
           case 'category': question.category = value.trim(); break;
           case 'difficulty': question.difficulty = value.trim().toLowerCase(); break;
           case 'timelimit': question.timeLimit = parseInt(value) || DEFAULT_TIME_LIMIT; break;

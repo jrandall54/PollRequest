@@ -87,9 +87,17 @@ export async function renderSessionSetup() {
                     ${banksMap[bank].map(q => `
                       <label class="session-question-item" data-id="${q.id}" style="gap: 1rem; padding: 0.75rem 1rem;">
                         <input type="checkbox" class="question-checkbox custom-checkbox" data-bank="${escapeHtml(bank)}" value="${q.id}" />
-                        <span class="session-question-item__text" style="flex:1;">
-                          ${escapeHtml(q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text)}
-                        </span>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:0.25rem;">
+                          ${q.title ? `<span style="font-weight:700;font-size:1rem;color:var(--text-primary);">${escapeHtml(q.title)}</span>` : ''}
+                          <span class="session-question-item__text" style="font-weight:${q.title ? '400' : '500'};font-size:0.95rem;color:var(--text-primary);">
+                            ${escapeHtml(q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text)}
+                          </span>
+                          <div style="display:flex;gap:0.35rem;flex-wrap:wrap;margin-top:0.25rem;">
+                            ${q.type ? `<span class="badge badge--primary" style="font-size:0.7rem;">${escapeHtml(q.type)}</span>` : ''}
+                            ${(q.tags || []).map(t => `<span class="badge badge--neutral" style="font-size:0.7rem;">${escapeHtml(t)}</span>`).join('')}
+                            ${q.codeSnippet ? '<span class="badge badge--neutral" style="font-size:0.7rem;">&lt;/&gt; Code</span>' : ''}
+                          </div>
+                        </div>
                         <div class="session-question-item__meta">
                           <span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span>
                           <span class="text-muted text-sm">${q.timeLimit || 30}s</span>

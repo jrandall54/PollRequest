@@ -129,8 +129,13 @@ export async function renderQuestionManager() {
                               <input type="checkbox" class="q-select-cb custom-checkbox" data-id="${q.id}" data-bank="${escapeHtml(bank)}" />
                             </td>
                             <td>
-                              <div style="font-weight:500;font-size:0.95rem;color:var(--text-primary);">${escapeHtml(q.text.length > 70 ? q.text.substring(0, 70) + '...' : q.text)}</div>
-                              ${q.codeSnippet ? '<span class="badge badge--neutral" style="margin-top:0.35rem;font-size:0.7rem;">Has code</span>' : ''}
+                              ${q.title ? `<div style="font-weight:700;font-size:1rem;color:var(--text-primary);margin-bottom:0.25rem;">${escapeHtml(q.title)}</div>` : ''}
+                              <div style="font-weight:${q.title ? '400' : '500'};font-size:0.95rem;color:var(--text-primary);">${escapeHtml(q.text.length > 70 ? q.text.substring(0, 70) + '...' : q.text)}</div>
+                              <div style="display:flex;gap:0.35rem;margin-top:0.5rem;flex-wrap:wrap;">
+                                ${q.type ? `<span class="badge badge--primary" style="font-size:0.7rem;">${escapeHtml(q.type)}</span>` : ''}
+                                ${(q.tags || []).map(t => `<span class="badge badge--neutral" style="font-size:0.7rem;">${escapeHtml(t)}</span>`).join('')}
+                                ${q.codeSnippet ? '<span class="badge badge--neutral" style="font-size:0.7rem;">&lt;/&gt; Code</span>' : ''}
+                              </div>
                             </td>
                             <td><span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span></td>
                             <td>${q.timeLimit || 30}s</td>
@@ -286,17 +291,37 @@ export async function renderQuestionManager() {
   function showQuestionForm(existing = null) {
     const isEdit = !!existing;
     const hasMain = !!existing?.codeSnippetMain;
+    const existingTypes = [...new Set(questions.map(q => q.type).filter(Boolean))].sort();
+    if (existingTypes.length === 0) existingTypes.push('Multiple Choice', 'True/False', 'Guess the Output', 'Conceptual');
+
     const formContent = document.createElement('div');
     formContent.innerHTML = `
+      <datalist id="question-types-list">
+        ${existingTypes.map(t => `<option value="${escapeHtml(t)}"></option>`).join('')}
+      </datalist>
       <div style="display:flex;flex-direction:column;gap:1rem;">
         <div class="input-group">
+          <label>Question Title (optional)</label>
+          <input class="input" id="qf-title" placeholder="e.g., Loop Basics" value="${existing?.title || ''}" />
+        </div>
+        <div class="input-group">
           <label>Question Text</label>
-          <textarea class="textarea" id="qf-text" rows="3" placeholder="What will this code output?">${existing?.text || ''}</textarea>
+          <textarea class="textarea" id="qf-text" rows="2" placeholder="What will this code output?">${existing?.text || ''}</textarea>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
           <div class="input-group">
             <label>Sub-Bank</label>
             <input class="input" id="qf-bank" placeholder="e.g., Custom Questions" value="${existing?.bank || existing?.category || 'Custom Questions'}" />
+          </div>
+          <div class="input-group">
+            <label>Question Type</label>
+            <input class="input" id="qf-type" list="question-types-list" placeholder="e.g., Multiple Choice" value="${existing?.type || 'Multiple Choice'}" />
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
+          <div class="input-group">
+            <label>Tags (comma-separated)</label>
+            <input class="input" id="qf-tags" placeholder="e.g., loops, arrays" value="${(existing?.tags || []).join(', ')}" />
           </div>
           <div class="input-group">
             <label>Difficulty</label>
@@ -483,7 +508,13 @@ export async function renderQuestionManager() {
     
     const multiSelect = choices.filter(c => c.isCorrect).length > 1;
 
+    const tagsInput = document.getElementById('qf-tags')?.value.trim() || '';
+    const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : [];
+
     return {
+      title: document.getElementById('qf-title')?.value.trim() || null,
+      type: document.getElementById('qf-type')?.value.trim() || 'Multiple Choice',
+      tags,
       text,
       codeSnippet,
       codeSnippetMain,
