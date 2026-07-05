@@ -184,10 +184,10 @@ export async function renderQuestionManager() {
         </div>
 
         <div id="qf-code-section" class="${hasMain ? 'dual-snippets' : ''}" style="margin: 0;">
-          <div class="input-group" style="margin: 0; width: 100%;">
+          <div class="input-group" id="qf-code-class-container" style="margin: 0; width: 100%;">
             <label id="lbl-qf-code">${hasMain ? 'Class Definition (optional)' : 'Code Snippet (optional)'}</label>
             <div class="live-editor-container">
-              <textarea class="live-editor-textarea" id="qf-code" spellcheck="false" placeholder="class MyClass { ... }">${existing?.codeSnippet || ''}</textarea>
+              <textarea class="live-editor-textarea" id="qf-code" spellcheck="false" placeholder="e.g., class MyClass { ... }">${existing?.codeSnippet || ''}</textarea>
               <pre class="live-editor-pre" aria-hidden="true"><code class="language-java" id="qf-code-highlight"></code></pre>
             </div>
           </div>
@@ -195,7 +195,7 @@ export async function renderQuestionManager() {
           <div class="input-group" id="qf-code-main-container" style="margin: 0; width: 100%; display: ${hasMain ? 'flex' : 'none'};">
             <label>Main Method (optional)</label>
             <div class="live-editor-container">
-              <textarea class="live-editor-textarea" id="qf-code-main" spellcheck="false" placeholder="public static void main(String[] args) { ... }">${existing?.codeSnippetMain || 'public static void main(String[] args) {\n    \n}'}</textarea>
+              <textarea class="live-editor-textarea" id="qf-code-main" spellcheck="false" placeholder="e.g., public static void main(String[] args) { ... }">${existing?.codeSnippetMain || 'public static void main(String[] args) {\n    \n}'}</textarea>
               <pre class="live-editor-pre" aria-hidden="true"><code class="language-java" id="qf-code-main-highlight"></code></pre>
             </div>
           </div>

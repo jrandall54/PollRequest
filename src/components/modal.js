@@ -60,6 +60,8 @@ export function showModal(options = {}) {
 
   function close() {
     overlay.classList.remove('modal-overlay--visible');
+    document.body.style.userSelect = originalUserSelect;
+    document.body.style.webkitUserSelect = originalWebkitUserSelect;
     setTimeout(() => overlay.remove(), 200);
   }
 
@@ -149,10 +151,8 @@ export function showModal(options = {}) {
         -webkit-user-select: text;
       }
       .modal__content--large { 
-        max-width: 900px;
-        resize: both;
+        max-width: 800px;
         min-width: 480px;
-        min-height: 400px;
       }
       .modal__content--small { max-width: 360px; }
       .modal__header {
@@ -179,6 +179,12 @@ export function showModal(options = {}) {
     `;
     document.head.appendChild(style);
   }
+
+  // Prevent background text selection while modal is open
+  const originalUserSelect = document.body.style.userSelect;
+  const originalWebkitUserSelect = document.body.style.webkitUserSelect;
+  document.body.style.userSelect = 'none';
+  document.body.style.webkitUserSelect = 'none';
 
   return { close, element: overlay };
 }
