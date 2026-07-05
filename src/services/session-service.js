@@ -338,3 +338,41 @@ export function cleanupListeners() {
     responsesListener = null;
   }
 }
+
+/**
+ * Delete a session and its responses
+ */
+export async function deleteSession(sessionId) {
+  const { deleteDoc } = await import('firebase/firestore');
+  try {
+    const responsesRef = collection(db, COLLECTION, sessionId, 'responses');
+    const snapshot = await getDocs(responsesRef);
+    const deletePromises = snapshot.docs.map(d => deleteDoc(doc(db, COLLECTION, sessionId, 'responses', d.id)));
+    await Promise.all(deletePromises);
+    await deleteDoc(doc(db, COLLECTION, sessionId));
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete all sessions and their responses
+ */
+export async function deleteAllSessions() {
+  const { deleteDoc } = await import('firebase/firestore');
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTION));
+    for (const sessionDoc of snapshot.docs) {
+      const sessionId = sessionDoc.id;
+      const responsesRef = collection(db, COLLECTION, sessionId, 'responses');
+      const responsesSnap = await getDocs(responsesRef);
+      const deletePromises = responsesSnap.docs.map(d => deleteDoc(doc(db, COLLECTION, sessionId, 'responses', d.id)));
+      await Promise.all(deletePromises);
+      await deleteDoc(doc(db, COLLECTION, sessionId));
+    }
+  } catch (error) {
+    console.error('Error deleting all sessions:', error);
+    throw error;
+  }
+}

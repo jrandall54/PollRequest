@@ -199,3 +199,31 @@ export async function updateStudentStats(uid, sessionStats) {
     console.error('Error updating student stats:', error);
   }
 }
+
+/**
+ * Delete a single student
+ */
+export async function deleteStudent(uid) {
+  const { deleteDoc } = await import('firebase/firestore');
+  try {
+    await deleteDoc(doc(db, COLLECTION, uid));
+  } catch (error) {
+    console.error('Error deleting student:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete all students
+ */
+export async function deleteAllStudents() {
+  const { deleteDoc } = await import('firebase/firestore');
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTION));
+    const promises = snapshot.docs.map(d => deleteDoc(doc(db, COLLECTION, d.id)));
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('Error deleting all students:', error);
+    throw error;
+  }
+}

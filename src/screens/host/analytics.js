@@ -9,9 +9,11 @@ import {
   getStudentAnalytics, getQuestionAnalytics, getSessionSummaries,
   exportStudentsCsv, exportQuestionsCsv, exportSessionsCsv, exportAllDataJson
 } from '../../services/analytics-service.js';
+import { deleteStudent, deleteAllStudents } from '../../services/student-service.js';
+import { deleteSession, deleteAllSessions, getSessionResponses } from '../../services/session-service.js';
+import { deleteQuestion, deleteAllQuestions, getAllQuestions } from '../../services/question-service.js';
 import { formatPercent, formatDate, showToast } from '../../utils/helpers.js';
-import { getSessionResponses } from '../../services/session-service.js';
-import { getAllQuestions } from '../../services/question-service.js';
+import { showModal } from '../../components/modal.js';
 
 export async function renderAnalytics() {
   const app = document.getElementById('app');
@@ -25,11 +27,14 @@ export async function renderAnalytics() {
         </button>
         <h3>Analytics</h3>
         <div style="display:flex;gap:0.5rem;">
+          <button class="btn btn--danger btn--sm" id="btn-wipe-database">
+            ${getUiIcon('trash', 16)} Wipe Data
+          </button>
           <button class="btn btn--secondary btn--sm" id="btn-export-csv">
             ${getUiIcon('download', 16)} Export CSV
           </button>
           <button class="btn btn--secondary btn--sm" id="btn-export-json">
-            ${getUiIcon('download', 16)} Export All (JSON)
+            ${getUiIcon('download', 16)} Export All
           </button>
         </div>
       </header>
@@ -60,6 +65,33 @@ export async function renderAnalytics() {
     });
   });
 
+  document.getElementById('btn-wipe-database').addEventListener('click', () => {
+    showModal({
+      title: 'Wipe Entire Database?',
+      content: '<p>Are you absolutely sure? This will delete ALL students, sessions, and questions from the database. This action cannot be undone.</p><p style="margin-top:1rem;color:var(--error);"><strong>We highly recommend exporting all data to JSON first.</strong></p>',
+      buttons: [
+        { text: 'Cancel', class: 'btn--ghost', close: true },
+        {
+          text: 'Wipe Everything',
+          class: 'btn--danger',
+          onClick: async () => {
+            try {
+              app.innerHTML = '<div class="flex-center screen"><div class="spinner"></div></div>';
+              await deleteAllStudents();
+              await deleteAllSessions();
+              await deleteAllQuestions();
+              showToast('Database wiped', 'success');
+              router.navigate('/host/dashboard');
+            } catch (e) {
+              showToast('Failed to wipe data: ' + e.message, 'error');
+              router.navigate('/host/analytics');
+            }
+          }
+        }
+      ]
+    });
+  });
+
   document.getElementById('btn-export-csv').addEventListener('click', async () => {
     try {
       if (activeTab === 'students') await exportStudentsCsv();
@@ -80,10 +112,10 @@ export async function renderAnalytics() {
     }
   });
 
-  loadTab('students');
-
   let currentData = [];
   let currentSort = { col: null, asc: true };
+
+  loadTab('students');
 
   async function loadTab(tab) {
     const container = document.getElementById('analytics-content');
@@ -158,6 +190,9 @@ export async function renderAnalytics() {
         <div class="card stat-card"><div class="stat-card__value">${Math.round(currentData.reduce((s, st) => s + st.accuracy, 0) / currentData.length)}%</div><div class="stat-card__label">Avg Accuracy</div></div>
         <div class="card stat-card"><div class="stat-card__value">${Math.round(currentData.reduce((s, st) => s + st.avgResponseTime, 0) / currentData.length / 1000)}s</div><div class="stat-card__label">Avg Response Time</div></div>
       </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+        <button class="btn btn--danger btn--sm" id="btn-clear-students">${getUiIcon('trash', 16)} Clear All Students</button>
+      </div>
       <div class="table-wrap">
         <table class="table sortable-table">
           <thead>
@@ -169,6 +204,7 @@ export async function renderAnalytics() {
               <th data-sort="avgResponseTime">Avg Time ↕</th>
               <th data-sort="sessionsAttended">Sessions ↕</th>
               <th data-sort="bestStreak">Best Streak ↕</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="students-tbody">
@@ -178,6 +214,30 @@ export async function renderAnalytics() {
       </div>
     `;
     setupSorting(container.querySelector('.sortable-table'), generateStudentsRows, 'students-tbody');
+
+    document.getElementById('btn-clear-students').addEventListener('click', () => {
+      showModal({
+        title: 'Clear All Students?',
+        content: 'Are you sure you want to delete all student profiles? This will not delete past sessions.',
+        buttons: [
+          { text: 'Cancel', class: 'btn--ghost', close: true },
+          {
+            text: 'Clear Students', class: 'btn--danger',
+            onClick: async () => {
+              await deleteAllStudents();
+              showToast('Students cleared', 'success');
+              loadTab('students');
+            }
+          }
+        ]
+      });
+    });
+
+    attachDeleteListeners('students-tbody', async (id) => {
+      await deleteStudent(id);
+      showToast('Student deleted', 'success');
+      loadTab('students');
+    });
   }
 
   function generateStudentsRows(data) {
@@ -200,6 +260,11 @@ export async function renderAnalytics() {
         <td>${(s.avgResponseTime / 1000).toFixed(1)}s</td>
         <td>${s.sessionsAttended}</td>
         <td>${s.bestStreak}</td>
+        <td>
+          <button class="btn btn--icon btn--ghost btn-delete-row" data-id="${s.uid}" title="Delete Student">
+            <span style="color:var(--error);">${getUiIcon('trash', 16)}</span>
+          </button>
+        </td>
       </tr>
     `).join('');
   }
@@ -210,7 +275,9 @@ export async function renderAnalytics() {
       return;
     }
 
-    container.innerHTML = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+        <button class="btn btn--danger btn--sm" id="btn-clear-questions">${getUiIcon('trash', 16)} Clear All Questions</button>
+      </div>
       <div class="table-wrap">
         <table class="table sortable-table">
           <thead>
@@ -222,6 +289,7 @@ export async function renderAnalytics() {
               <th data-sort="correctRate">Correct Rate ↕</th>
               <th data-sort="avgResponseTime">Avg Time ↕</th>
               <th data-sort="mostCommonWrongAnswer">Most Common Distractor ↕</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="questions-tbody">
@@ -231,6 +299,30 @@ export async function renderAnalytics() {
       </div>
     `;
     setupSorting(container.querySelector('.sortable-table'), generateQuestionsRows, 'questions-tbody');
+
+    document.getElementById('btn-clear-questions').addEventListener('click', () => {
+      showModal({
+        title: 'Clear All Questions?',
+        content: 'Are you sure you want to delete all questions? This will permanently remove them from the Question Bank.',
+        buttons: [
+          { text: 'Cancel', class: 'btn--ghost', close: true },
+          {
+            text: 'Clear Questions', class: 'btn--danger',
+            onClick: async () => {
+              await deleteAllQuestions();
+              showToast('Questions cleared', 'success');
+              loadTab('questions');
+            }
+          }
+        ]
+      });
+    });
+
+    attachDeleteListeners('questions-tbody', async (id) => {
+      await deleteQuestion(id);
+      showToast('Question deleted', 'success');
+      loadTab('questions');
+    });
   }
 
   function generateQuestionsRows(data) {
@@ -252,6 +344,11 @@ export async function renderAnalytics() {
           </td>
           <td>${(q.avgResponseTime / 1000).toFixed(1)}s</td>
           <td><span style="font-weight:700;color:var(--error);">${distractorStr}</span></td>
+          <td>
+            <button class="btn btn--icon btn--ghost btn-delete-row" data-id="${q.id}" title="Delete Question">
+              <span style="color:var(--error);">${getUiIcon('trash', 16)}</span>
+            </button>
+          </td>
         </tr>
       `;
     }).join('');
@@ -264,6 +361,9 @@ export async function renderAnalytics() {
     }
 
     container.innerHTML = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+        <button class="btn btn--danger btn--sm" id="btn-clear-sessions">${getUiIcon('trash', 16)} Clear All Sessions</button>
+      </div>
       <div class="table-wrap">
         <table class="table sortable-table" style="width:100%;">
           <thead>
@@ -275,6 +375,7 @@ export async function renderAnalytics() {
               <th data-sort="questionCount">Questions ↕</th>
               <th data-sort="classAccuracy">Accuracy ↕</th>
               <th data-sort="avgScore">Avg Score ↕</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="sessions-tbody">
@@ -285,12 +386,36 @@ export async function renderAnalytics() {
     `;
     setupSorting(container.querySelector('.sortable-table'), generateSessionsRows, 'sessions-tbody');
     attachSessionRowListeners();
+
+    document.getElementById('btn-clear-sessions').addEventListener('click', () => {
+      showModal({
+        title: 'Clear All Sessions?',
+        content: 'Are you sure you want to delete all past sessions? Their data will be lost.',
+        buttons: [
+          { text: 'Cancel', class: 'btn--ghost', close: true },
+          {
+            text: 'Clear Sessions', class: 'btn--danger',
+            onClick: async () => {
+              await deleteAllSessions();
+              showToast('Sessions cleared', 'success');
+              loadTab('sessions');
+            }
+          }
+        ]
+      });
+    });
+
+    attachDeleteListeners('sessions-tbody', async (id) => {
+      await deleteSession(id);
+      showToast('Session deleted', 'success');
+      loadTab('sessions');
+    }, '.btn-delete-row-session');
   }
 
   function generateSessionsRows(data) {
     return data.map(s => `
       <tr class="session-row" data-id="${s.id}" style="cursor:pointer;" title="Click to expand question details">
-        <td style="font-weight:600;display:flex;align-items:center;gap:0.5rem;">
+        <td style="font-weight:600;display:flex;align-items:center;gap:0.5rem;" class="session-expand-cell">
           <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="9 18 15 12 9 6"></polyline></svg>
           ${escapeHtml(s.name)}
         </td>
@@ -300,9 +425,14 @@ export async function renderAnalytics() {
         <td>${s.questionCount}</td>
         <td>${s.classAccuracy}%</td>
         <td>${s.avgScore.toLocaleString()}</td>
+        <td>
+          <button class="btn btn--icon btn--ghost btn-delete-row-session" data-id="${s.id}" title="Delete Session" style="position:relative;z-index:2;">
+            <span style="color:var(--error);">${getUiIcon('trash', 16)}</span>
+          </button>
+        </td>
       </tr>
       <tr class="session-details-row" id="details-${s.id}" style="display:none;background:var(--bg-tertiary);">
-        <td colspan="7" style="padding:1.5rem;">
+        <td colspan="8" style="padding:1.5rem;">
           <div class="flex-center spinner-container"><div class="spinner spinner--sm"></div></div>
           <div class="details-content" style="display:none;"></div>
         </td>
@@ -312,7 +442,9 @@ export async function renderAnalytics() {
 
   function attachSessionRowListeners() {
     document.querySelectorAll('.session-row').forEach(row => {
-      row.addEventListener('click', async () => {
+      row.addEventListener('click', async (e) => {
+        if (e.target.closest('.btn-delete-row-session')) return; // ignore delete button clicks
+
         const sessionId = row.dataset.id;
         const detailsRow = document.getElementById(`details-${sessionId}`);
         const icon = row.querySelector('.expand-icon');
@@ -366,6 +498,29 @@ export async function renderAnalytics() {
           icon.style.transform = 'rotate(0deg)';
         }
       });
+    });
+  }
+
+  function attachDeleteListeners(tbodyId, deleteFn, btnClass = '.btn-delete-row') {
+    document.getElementById(tbodyId)?.addEventListener('click', (e) => {
+      const btn = e.target.closest(btnClass);
+      if (btn) {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        showModal({
+          title: 'Confirm Delete',
+          content: 'Are you sure you want to delete this row?',
+          buttons: [
+            { text: 'Cancel', class: 'btn--ghost', close: true },
+            {
+              text: 'Delete', class: 'btn--danger',
+              onClick: async () => {
+                await deleteFn(id);
+              }
+            }
+          ]
+        });
+      }
     });
   }
 }
