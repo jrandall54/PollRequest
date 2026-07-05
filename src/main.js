@@ -95,7 +95,7 @@ function createGlobalThemeSwitcher() {
   // Hide on game screens
   const style = document.createElement('style');
   style.textContent = `
-    body:has(.question-screen, .results-screen, .podium-screen, .player-result, .answer-screen, .wait-screen) #global-theme-switcher {
+    body:has(.question-screen, .results-screen, .podium-screen, .player-result, .answer-screen, .wait-screen, .profile-setup) #global-theme-switcher {
       display: none !important;
     }
   `;
