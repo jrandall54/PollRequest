@@ -51,73 +51,71 @@ export async function renderHostHeader(containerId = null) {
     if (el) el.innerHTML = html;
   }
 
-  // Attach event listeners after a brief timeout to ensure DOM insertion if returning HTML
-  setTimeout(() => {
-    const brand = document.getElementById('hh-brand');
-    const logout = document.getElementById('hh-logout');
-    const courseSelect = document.getElementById('hh-course-select');
-
-    if (brand) brand.addEventListener('click', () => router.navigate('/host/dashboard'));
-    if (logout) logout.addEventListener('click', () => {
-      sessionStorage.removeItem('pollrequest_host');
-      router.navigate('/host/login');
-    });
-
-    if (courseSelect) {
-      courseSelect.addEventListener('change', async (e) => {
-        const val = e.target.value;
-        if (val === 'new_course') {
-          // Reset select back to active
-          e.target.value = hostStore.state.activeCourseId || '';
-          
-          const name = prompt("Enter new course name:");
-          if (name && name.trim()) {
-            try {
-              const newId = await createCourse({ name: name.trim() });
-              hostStore.update({ activeCourseId: newId });
-              window.location.reload();
-            } catch (err) {
-              alert("Failed to create course. Check permissions.");
-            }
-          }
-        } else if (val === 'manage_courses') {
-          // Reset select back to active
-          e.target.value = hostStore.state.activeCourseId || '';
-          
-          // Simple manage flow for now: Rename or Delete the active course
-          if (hostStore.state.activeCourseId) {
-             const activeC = courses.find(c => c.id === hostStore.state.activeCourseId);
-             if (activeC) {
-                const action = prompt(`Manage Course: "${activeC.name}"\n\nType 'RENAME' to rename or 'DELETE' to delete this course:`);
-                if (action === 'RENAME') {
-                   const newName = prompt('New name for course:', activeC.name);
-                   if (newName && newName.trim()) {
-                      import('../services/course-service.js').then(({updateCourse}) => {
-                         updateCourse(activeC.id, {name: newName.trim()}).then(() => window.location.reload());
-                      });
-                   }
-                } else if (action === 'DELETE') {
-                   const confirmDel = confirm(`Are you SURE you want to delete "${activeC.name}"?\nThis will not delete the questions, but they will be orphaned.`);
-                   if (confirmDel) {
-                      import('../services/course-service.js').then(({deleteCourse}) => {
-                         deleteCourse(activeC.id).then(() => {
-                            hostStore.update({ activeCourseId: null });
-                            window.location.reload();
-                         });
-                      });
-                   }
-                }
-             }
-          } else {
-             alert("No active course to manage.");
-          }
-        } else if (val) {
-          hostStore.update({ activeCourseId: val });
-          window.location.reload(); 
-        }
-      });
-    }
-  }, 0);
-
   return html;
 }
+
+// ── Global Event Delegation ──────────────────────────────
+// This ensures the events work regardless of when the HTML is inserted into the DOM.
+document.addEventListener('click', (e) => {
+  if (e.target) {
+    if (e.target.id === 'hh-brand' || e.target.closest('#hh-brand')) {
+      router.navigate('/host/dashboard');
+    }
+    if (e.target.id === 'hh-logout' || e.target.closest('#hh-logout')) {
+      sessionStorage.removeItem('pollrequest_host');
+      router.navigate('/host/login');
+    }
+  }
+});
+
+document.addEventListener('change', async (e) => {
+  if (e.target && e.target.id === 'hh-course-select') {
+    const val = e.target.value;
+    const courses = await getAllCourses(); // Need to fetch here since it's global
+    
+    if (val === 'new_course') {
+      e.target.value = hostStore.state.activeCourseId || '';
+      const name = prompt("Enter new course name:");
+      if (name && name.trim()) {
+        try {
+          const newId = await createCourse({ name: name.trim() });
+          hostStore.update({ activeCourseId: newId });
+          window.location.reload();
+        } catch (err) {
+          alert("Failed to create course. Check permissions.");
+        }
+      }
+    } else if (val === 'manage_courses') {
+      e.target.value = hostStore.state.activeCourseId || '';
+      if (hostStore.state.activeCourseId) {
+         const activeC = courses.find(c => c.id === hostStore.state.activeCourseId);
+         if (activeC) {
+            const action = prompt(`Manage Course: "${activeC.name}"\n\nType 'RENAME' to rename or 'DELETE' to delete this course:`);
+            if (action === 'RENAME') {
+               const newName = prompt('New name for course:', activeC.name);
+               if (newName && newName.trim()) {
+                  import('../services/course-service.js').then(({updateCourse}) => {
+                     updateCourse(activeC.id, {name: newName.trim()}).then(() => window.location.reload());
+                  });
+               }
+            } else if (action === 'DELETE') {
+               const confirmDel = confirm(`Are you SURE you want to delete "${activeC.name}"?\nThis will not delete the questions, but they will be orphaned.`);
+               if (confirmDel) {
+                  import('../services/course-service.js').then(({deleteCourse}) => {
+                     deleteCourse(activeC.id).then(() => {
+                        hostStore.update({ activeCourseId: null });
+                        window.location.reload();
+                     });
+                  });
+               }
+            }
+         }
+      } else {
+         alert("No active course to manage.");
+      }
+    } else if (val) {
+      hostStore.update({ activeCourseId: val });
+      window.location.reload(); 
+    }
+  }
+});
