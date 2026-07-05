@@ -1181,12 +1181,12 @@ export function getIconSvg(iconId, size = 24) {
   const icon = ICONS[iconId];
   if (!icon) return '';
   // Inject width/height into the SVG string
-  return icon.svg.replace('<svg ', `<svg width="${size}" height="${size}" `);
+  return icon.svg.replace(/<svg\s+/, `<svg width="${size}" height="${size}" `);
 }
 
 // ── Helper: render a UI icon SVG ────────────────────────────
 export function getUiIcon(iconName, size = 24) {
   const svg = UI_ICONS[iconName];
   if (!svg) return '';
-  return svg.replace('<svg ', `<svg width="${size}" height="${size}" `);
+  return svg.replace(/<svg\s+/, `<svg width="${size}" height="${size}" `);
 }
