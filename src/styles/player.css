@@ -394,3 +394,52 @@
     min-height: 64px;
   }
 }
+
+/* ── Desktop Player Overrides ───────────────────────────────── */
+@media (min-width: 768px) {
+  .answer-screen, .player-result {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .answer-screen__header {
+    margin-bottom: 2rem;
+  }
+
+  .answer-screen__question {
+    font-size: clamp(1.1rem, 3.5vh, 1.75rem);
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .answer-screen__buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    justify-content: stretch;
+    flex: 0 1 auto;
+  }
+
+  /* Make answer buttons match projector size on desktop */
+  .answer-screen__buttons .answer-btn {
+    padding: clamp(0.75rem, 2vh, 1.25rem) 1.5rem;
+    font-size: clamp(1rem, 2.5vh, 1.4rem);
+    border-radius: var(--radius-lg);
+  }
+
+  /* Restore projector styling for code blocks on desktop */
+  .answer-screen .question-code-wrap pre,
+  .answer-screen .question-code-wrap code {
+    font-size: clamp(0.875rem, 2.5vh, 1.35rem) !important;
+    line-height: 1.5 !important;
+    padding: clamp(0.75rem, 2vh, 1.25rem) !important;
+    white-space: pre-wrap !important;
+    overflow: hidden !important;
+  }
+  
+  .answer-screen .dual-snippets {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
