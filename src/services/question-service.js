@@ -25,7 +25,23 @@ export async function getAllQuestions(courseId = null) {
       q = query(collection(db, COLLECTION));
     }
     const snapshot = await getDocs(q);
-    const questions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    const questions = await Promise.all(snapshot.docs.map(async (d) => {
+      const data = d.data();
+      let type = data.type;
+      
+      // Legacy migration: kill "Multiple Choice" once and for all
+      if (!type || type.toLowerCase() === 'multiple choice') {
+        type = 'Predict Output';
+        try {
+          await updateDoc(doc(db, COLLECTION, d.id), { type });
+        } catch (e) {
+          console.warn('Failed to migrate legacy question type for ' + d.id);
+        }
+      }
+      
+      return { id: d.id, ...data, type };
+    }));
+    
     return questions.sort((a, b) => {
       const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
       const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
