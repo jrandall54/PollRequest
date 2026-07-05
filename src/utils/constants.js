@@ -92,32 +92,32 @@ export const ICONS = {
   cat: {
     name: 'Cat',
     category: 'animal',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4.42 0 8-2.69 8-6V7c0-.55-.22-1.08-.62-1.47L16 2l-1 4-3-1-3 1-1-4-3.38 3.53A2.08 2.08 0 004 7v9c0 3.31 3.58 6 8 6z"/><circle cx="9" cy="12" r="0.5" fill="currentColor"/><circle cx="15" cy="12" r="0.5" fill="currentColor"/><path d="M10 16c.5.5 1.2.8 2 .8s1.5-.3 2-.8"/></svg>`
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"/><path d="M8 14v.5"/><path d="M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/></svg>`
   },
   dragon: {
-    name: 'Dragon',
+    name: 'Flame',
     category: 'animal',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14c0-3 2-6 6-7l1-3 2 1 2-1 1 3c4 1 6 4 6 7"/><path d="M4 14c0 4 3.58 7 8 7s8-3 8-7"/><path d="M8 18l-2 3"/><path d="M16 18l2 3"/><circle cx="9" cy="12" r="0.5" fill="currentColor"/><circle cx="15" cy="12" r="0.5" fill="currentColor"/><path d="M11 9l1 2 1-2"/></svg>`
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`
   },
   shark: {
-    name: 'Shark',
+    name: 'Fish',
     category: 'animal',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c1-4.5 5.5-8 10-8 2.5 0 5 1 7 3l3-2v6h-6l3-2c-1.5-1.5-3.5-2.5-5.5-2.5S7 8 5 12"/><path d="M2 12c1 4.5 5.5 8 10 8 4 0 7.5-2.5 9.5-6"/><path d="M12 12l-1 5"/><circle cx="7" cy="12" r="0.5" fill="currentColor"/></svg>`
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.46-3.44 6-7 6-3.56 0-7.56-2.54-8.5-6Z"/><path d="M18 12v.5"/><path d="M16 17.93a9.77 9.77 0 0 1-2.76 1.05C8.84 20.08 4 16 4 12c0-4 4.84-8.08 9.24-6.98A9.77 9.77 0 0 1 16 6.07"/><path d="M2 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.46-3.44 6-7 6-3.56 0-7.56-2.54-8.5-6Z"/></svg>`
   },
   wolf: {
-    name: 'Wolf',
+    name: 'Dog',
     category: 'animal',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4.42 0 8-3.13 8-7v-4l-2-6-3 3-3-2-3 2-3-3-2 6v4c0 3.87 3.58 7 8 7z"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M10 17l2 1 2-1"/></svg>`
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.7.54 3 2 3h1"/><path d="M10 5.172V7h-.5a1.5 1.5 0 0 0-1.5 1.5v.5"/><path d="M14 5.172C14 3.782 15.577 2.679 17.5 3c2.823.47 4.113 6.006 4 7-.08.7-.54 3-2 3h-1"/><path d="M14 5.172V7h.5a1.5 1.5 0 0 1 1.5 1.5v.5"/><path d="M12 13v.5"/><path d="M8 14h8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2Z"/><path d="M8 14v-1.5a2.5 2.5 0 0 1 5 0V14"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/></svg>`
   },
   raven: {
-    name: 'Raven',
+    name: 'Bird',
     category: 'animal',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 4l-3 1c-2-1-5-1-7 1S4 11 4 14c0 3 2 5 4 6l2 1h4c3 0 6-2 7-5 1-2 1-5-1-7l2-3z"/><path d="M18 4l2-1"/><circle cx="10" cy="10" r="1" fill="currentColor"/><path d="M4 14l-2 2"/><path d="M6 20l-1 2"/><path d="M10 21l-0.5 2"/></svg>`
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h.01"/><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5"/><path d="M10 18v3"/><path d="M14 17.75V21"/><path d="M7 18a6 6 0 0 0 3.84-10.61"/></svg>`
   },
   bear: {
-    name: 'Bear',
+    name: 'Rabbit',
     category: 'animal',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M12 22c4.42 0 8-3.13 8-7V9c0-2-1-4-3-5-1.5 1-3 1.5-5 1.5S7.5 5 6 4C4 5 3 7 3 9v6c0 3.87 3.58 7 8 7z"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M9 17c1 1 2 1 3 1s2 0 3-1"/></svg>`
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 16a3 3 0 0 1 2.24 5"/><path d="M18 12h.01"/><path d="M18 21h-8a4 4 0 0 1-4-4 7 7 0 0 1 7-7h.2L9.6 6.4a1 1 0 1 1 2.8-2.8L15.8 7h.2c3.3 0 6 2.7 6 6v1a2 2 0 0 1-2 2h-1a3 3 0 0 0-3 3"/><path d="M20 8.54V4a2 2 0 1 0-4 0v3"/><path d="M7.612 12.524a3 3 0 1 0-1.6 4.3"/></svg>`
   },
 
   // ── Game / Objects ──
