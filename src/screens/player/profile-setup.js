@@ -7,7 +7,7 @@ import router from '../../router.js';
 import { getIconSvg } from '../../utils/constants.js';
 import { createIconPicker } from '../../components/icon-picker.js';
 import { initAuth, saveProfile, reclaimProfile, forceNewIdentity } from '../../services/student-service.js';
-import { joinSession } from '../../services/session-service.js';
+import { joinSession, leaveSession } from '../../services/session-service.js';
 import { showToast } from '../../utils/helpers.js';
 import { userStore } from '../../state.js';
 
@@ -120,8 +120,9 @@ export async function renderProfileSetup(params) {
     joinBtn.innerHTML = '<div class="spinner spinner--sm"></div> Joining...';
 
     try {
-      // Authenticate anonymously
-      let uid = await initAuth();
+      // Authenticate anonymously (get current browser session UID)
+      let currentUid = await initAuth();
+      let uid = currentUid;
 
       // Check if this exact name + icon pair already exists in the database
       // If so, we "reclaim" that profile (act as a low-security login)
@@ -132,6 +133,11 @@ export async function renderProfileSetup(params) {
         // If we are replacing an existing logged in identity with a brand new one,
         // force a new UID so they don't inherit the previous identity's stats
         uid = await forceNewIdentity();
+      }
+
+      // If the UID changed, we need to leave the session with the old UID so we don't leave a ghost in the lobby
+      if (uid !== currentUid) {
+        await leaveSession(sessionId, currentUid);
       }
 
       // Join the session FIRST to validate name uniqueness

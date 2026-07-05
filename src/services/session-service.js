@@ -7,7 +7,7 @@ import { db } from '../firebase.js';
 import {
   collection, doc, addDoc, getDoc, getDocs, updateDoc,
   onSnapshot, serverTimestamp, query, where, deleteDoc,
-  writeBatch, Timestamp
+  writeBatch, Timestamp, deleteField
 } from 'firebase/firestore';
 import { sessionStore } from '../state.js';
 import { generateJoinCode } from '../utils/helpers.js';
@@ -112,6 +112,22 @@ export async function joinSession(sessionId, player) {
   } catch (error) {
     console.error('Error joining session:', error);
     throw error;
+  }
+}
+
+/**
+ * Leave a session (remove player from session)
+ */
+export async function leaveSession(sessionId, uid) {
+  try {
+    const sessionRef = doc(db, COLLECTION, sessionId);
+    await updateDoc(sessionRef, {
+      [`players.${uid}`]: deleteField()
+    });
+    return true;
+  } catch (error) {
+    console.error('Error leaving session:', error);
+    return false;
   }
 }
 
