@@ -53,8 +53,8 @@ export async function showStudentStats(uid, name, icon) {
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
     <div style="text-align:center;margin-bottom:2rem;">
-      <div style="color:var(--accent-primary);margin-bottom:1rem;">
-        ${getIconSvg(icon, 64)}
+      <div style="color:var(--accent-primary);margin-bottom:1rem; display:flex; justify-content:center;">
+        ${getIconSvg(icon, 40)}
       </div>
       <h2 style="margin:0;color:var(--text-primary);font-size:1.5rem;">${escapeHtml(name)}</h2>
       <div style="color:var(--text-tertiary);font-size:0.875rem;margin-top:0.25rem;">Student Statistics</div>
