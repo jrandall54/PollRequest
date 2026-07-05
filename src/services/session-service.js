@@ -21,10 +21,11 @@ let responsesListener = null;
 /**
  * Create a new game session
  */
-export async function createSession(name, questionIds) {
+export async function createSession(name, questionIds, courseId = null) {
   try {
     const joinCode = generateJoinCode();
     const data = {
+      courseId: courseId || 'General',
       name: name || `Session ${new Date().toLocaleDateString()}`,
       status: 'lobby',
       joinCode,
@@ -334,9 +335,14 @@ export async function updateSessionTheme(sessionId, theme) {
 /**
  * Get all past sessions (for analytics)
  */
-export async function getAllSessions() {
+export async function getAllSessions(courseId = null) {
   try {
-    const q = query(collection(db, COLLECTION));
+    let q;
+    if (courseId) {
+      q = query(collection(db, COLLECTION), where('courseId', '==', courseId));
+    } else {
+      q = query(collection(db, COLLECTION));
+    }
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (error) {

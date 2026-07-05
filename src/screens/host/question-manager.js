@@ -10,15 +10,20 @@ import { importFromFile } from '../../services/import-service.js';
 import { showModal } from '../../components/modal.js';
 import { showToast } from '../../utils/helpers.js';
 import { DIFFICULTIES, DEFAULT_TIME_LIMIT } from '../../utils/constants.js';
+import { renderHostHeader } from '../../components/host-header.js';
+import { hostStore } from '../../state.js';
 
 export async function renderQuestionManager() {
   const app = document.getElementById('app');
   let questions = [];
   let sortCol = 'createdAt';
   let sortAsc = false;
+  let headerHtml = '';
 
   try {
-    questions = await getAllQuestions();
+    headerHtml = await renderHostHeader();
+    const courseId = hostStore.state.activeCourseId;
+    questions = await getAllQuestions(courseId);
   } catch (e) {
     console.warn('Could not load questions:', e);
   }
@@ -50,11 +55,13 @@ export async function renderQuestionManager() {
 
     app.innerHTML = `
       <div class="host-layout screen">
-        <header class="host-header">
+        ${headerHtml}
+
+        <div class="screen-subheader" style="padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);">
           <button class="btn btn--ghost btn--sm" id="btn-back">
             ${getUiIcon('arrowLeft', 18)} Dashboard
           </button>
-          <h3>Question Manager</h3>
+          <h3 style="margin: 0;">Question Manager</h3>
           <div style="display:flex;gap:0.5rem;">
             <button class="btn btn--danger btn--sm" id="btn-clear-bank">
               ${getUiIcon('trash', 16)} Clear Bank
@@ -66,7 +73,7 @@ export async function renderQuestionManager() {
               ${getUiIcon('plus', 16)} Add Question
             </button>
           </div>
-        </header>
+        </div>
 
         <main class="host-content">
           <div class="question-manager container">
@@ -242,10 +249,10 @@ export async function renderQuestionManager() {
             await updateQuestion(existing.id, data);
             showToast('Question updated', 'success');
           } else {
-            await createQuestion(data);
+            await createQuestion(data, hostStore.state.activeCourseId);
             showToast('Question created', 'success');
           }
-          questions = await getAllQuestions();
+          questions = await getAllQuestions(hostStore.state.activeCourseId);
           renderPage();
           return true;
         } catch (e) {
@@ -453,7 +460,7 @@ export async function renderQuestionManager() {
       }
       const result = await importFromFile(file);
       showToast(`Imported ${result.imported} question${result.imported !== 1 ? 's' : ''}${result.skipped ? `, ${result.skipped} skipped` : ''}`, 'success');
-      questions = await getAllQuestions();
+      questions = await getAllQuestions(hostStore.state.activeCourseId);
       renderPage();
     } catch (e) {
       showToast('Import error: ' + e.message, 'error');

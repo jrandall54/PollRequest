@@ -9,12 +9,18 @@ import { getAllQuestions } from '../../services/question-service.js';
 import { createSession } from '../../services/session-service.js';
 import { showToast } from '../../utils/helpers.js';
 
+import { renderHostHeader } from '../../components/host-header.js';
+import { hostStore } from '../../state.js';
+
 export async function renderSessionSetup() {
   const app = document.getElementById('app');
 
   let questions = [];
+  let headerHtml = '';
   try {
-    questions = await getAllQuestions();
+    headerHtml = await renderHostHeader();
+    const courseId = hostStore.state.activeCourseId;
+    questions = await getAllQuestions(courseId);
   } catch (e) {
     console.warn('Could not load questions:', e);
   }
@@ -23,15 +29,16 @@ export async function renderSessionSetup() {
 
   app.innerHTML = `
     <div class="host-layout screen">
-      <header class="host-header">
+      ${headerHtml}
+      <div class="screen-subheader" style="padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);">
         <button class="btn btn--ghost btn--sm" id="btn-back">
           ${getUiIcon('arrowLeft', 18)} Dashboard
         </button>
-        <h3>New Session</h3>
-        <button class="btn btn--primary" id="btn-start" disabled>
-          ${getUiIcon('play', 18)} Start Session
+        <h3 style="margin: 0;">New Session</h3>
+        <button class="btn btn--primary btn--sm" id="btn-start" disabled>
+          ${getUiIcon('play', 16)} Start Session
         </button>
-      </header>
+      </div>
 
       <main class="host-content">
         <div class="session-setup container">
@@ -125,7 +132,7 @@ export async function renderSessionSetup() {
     startBtn.innerHTML = '<div class="spinner spinner--sm"></div> Creating...';
 
     try {
-      const { id, joinCode } = await createSession(name, [...selectedIds]);
+      const { id, joinCode } = await createSession(name, [...selectedIds], hostStore.state.activeCourseId);
       router.navigate(`/host/lobby/${id}`);
     } catch (e) {
       showToast('Failed to create session: ' + e.message, 'error');

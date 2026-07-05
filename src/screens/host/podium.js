@@ -60,11 +60,11 @@ export async function renderPodium(params) {
           icon: data.players[uid]?.icon,
           answered: pResponses.length,
           correct: pResponses.filter(r => r.correct).length,
-          points: data.players[uid]?.points || 0,
+          points: data.players[uid]?.score || 0,
           totalResponseTime,
           finalStreak: currentStreak,
           bestStreak,
-        });
+        }, data.courseId || 'General');
       }
     } catch (e) {
       console.warn('Could not update student stats:', e);

@@ -11,7 +11,7 @@ import { batchImportQuestions } from './question-service.js';
  * @param {File} file
  * @returns {{ imported: number, skipped: number, errors: string[] }}
  */
-export async function importFromFile(file) {
+export async function importFromFile(file, courseId = null) {
   const content = await file.text();
   const ext = file.name.split('.').pop().toLowerCase();
 
@@ -33,6 +33,7 @@ export async function importFromFile(file) {
   parsed.forEach((q, i) => {
     const result = validateQuestion(q);
     if (result.valid) {
+      if (courseId) q.courseId = courseId;
       valid.push(q);
     } else {
       skipped++;
@@ -42,7 +43,7 @@ export async function importFromFile(file) {
 
   // Batch import valid questions
   if (valid.length > 0) {
-    await batchImportQuestions(valid);
+    await batchImportQuestions(valid, courseId);
   }
 
   return {

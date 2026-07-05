@@ -10,16 +10,23 @@ import { getAllQuestions } from '../../services/question-service.js';
 import { getAllSessions } from '../../services/session-service.js';
 import { getAllStudents } from '../../services/student-service.js';
 
+import { renderHostHeader } from '../../components/host-header.js';
+import { hostStore } from '../../state.js';
+
 export async function renderDashboard() {
   const app = document.getElementById('app');
+  
+  // Wait for header HTML to resolve
+  const headerHtml = await renderHostHeader();
 
   // Fetch counts for dashboard cards
   let questionCount = 0, sessionCount = 0, studentCount = 0;
   try {
+    const courseId = hostStore.state.activeCourseId;
     const [questions, sessions, students] = await Promise.all([
-      getAllQuestions(),
-      getAllSessions(),
-      getAllStudents(),
+      getAllQuestions(courseId),
+      getAllSessions(courseId),
+      getAllStudents(), // Analytics tracks total students, we can filter later if needed
     ]);
     questionCount = questions.length;
     sessionCount = sessions.filter(s => s.status === 'ended').length;
@@ -30,18 +37,7 @@ export async function renderDashboard() {
 
   app.innerHTML = `
     <div class="host-layout screen">
-      <header class="host-header">
-        <div class="host-header__brand">
-          ${getUiIcon('code', 28)}
-          <span class="text-gradient">PollRequest</span>
-        </div>
-        <div class="host-header__actions">
-          <button class="btn btn--secondary" id="db-logout">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Logout
-          </button>
-        </div>
-      </header>
+      ${headerHtml}
 
       <main class="host-content">
         <div class="container">
@@ -95,9 +91,5 @@ export async function renderDashboard() {
   });
   document.getElementById('card-analytics').addEventListener('click', () => {
     router.navigate('/host/analytics');
-  });
-  document.getElementById('db-logout').addEventListener('click', () => {
-    sessionStorage.removeItem('pollrequest_host');
-    router.navigate('/');
   });
 }

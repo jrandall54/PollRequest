@@ -129,3 +129,17 @@ export const uiStore = createStore({
   loading: false,
   error: null,
 });
+
+// Host app state (courses, etc)
+export const hostStore = createStore({
+  activeCourseId: localStorage.getItem('pollrequest_courseId') || null,
+});
+
+// Persist active course changes
+hostStore.subscribe('activeCourseId', (newId) => {
+  if (newId) {
+    localStorage.setItem('pollrequest_courseId', newId);
+  } else {
+    localStorage.removeItem('pollrequest_courseId');
+  }
+});

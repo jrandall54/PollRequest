@@ -145,29 +145,25 @@ export async function getAllStudents() {
 /**
  * Update a student's aggregated stats after a session
  */
-export async function updateStudentStats(uid, sessionStats) {
+export async function updateStudentStats(uid, sessionStats, courseId = 'General') {
   try {
     const ref = doc(db, COLLECTION, uid);
     const snap = await getDoc(ref);
-    const profile = snap.exists() ? snap.data() : { uid, stats: {} };
+    const profile = snap.exists() ? snap.data() : { uid, stats: {}, courseStats: {} };
 
-    const stats = profile.stats || {};
-    const newTotalAnswered = (stats.totalAnswered || 0) + sessionStats.answered;
-    const newTotalCorrect = (stats.totalCorrect || 0) + sessionStats.correct;
-    const newTotalPoints = (stats.totalPoints || 0) + sessionStats.points;
-    const newSessionsAttended = (stats.sessionsAttended || 0) + 1;
+    const calculateNewStats = (oldStats) => {
+      const stats = oldStats || {};
+      const newTotalAnswered = (stats.totalAnswered || 0) + sessionStats.answered;
+      const newTotalCorrect = (stats.totalCorrect || 0) + sessionStats.correct;
+      const newTotalPoints = (stats.totalPoints || 0) + sessionStats.points;
+      const newSessionsAttended = (stats.sessionsAttended || 0) + 1;
 
-    // Running average for response time
-    const oldTotal = (stats.averageResponseTime || 0) * (stats.totalAnswered || 0);
-    const newAvg = newTotalAnswered > 0
-      ? (oldTotal + sessionStats.totalResponseTime) / newTotalAnswered
-      : 0;
+      const oldTotal = (stats.averageResponseTime || 0) * (stats.totalAnswered || 0);
+      const newAvg = newTotalAnswered > 0
+        ? (oldTotal + sessionStats.totalResponseTime) / newTotalAnswered
+        : 0;
 
-    await setDoc(ref, {
-      uid,
-      name: sessionStats.name || profile.name || 'Unknown',
-      icon: sessionStats.icon || profile.icon || 'ghost',
-      stats: {
+      return {
         totalAnswered: newTotalAnswered,
         totalCorrect: newTotalCorrect,
         totalPoints: newTotalPoints,
@@ -175,6 +171,21 @@ export async function updateStudentStats(uid, sessionStats) {
         sessionsAttended: newSessionsAttended,
         currentStreak: sessionStats.finalStreak || 0,
         bestStreak: Math.max(stats.bestStreak || 0, sessionStats.bestStreak || 0),
+      };
+    };
+
+    const newOverallStats = calculateNewStats(profile.stats);
+    
+    const courseStatsMap = profile.courseStats || {};
+    const newCourseStats = calculateNewStats(courseStatsMap[courseId]);
+
+    await setDoc(ref, {
+      uid,
+      name: sessionStats.name || profile.name || 'Unknown',
+      icon: sessionStats.icon || profile.icon || 'ghost',
+      stats: newOverallStats,
+      courseStats: {
+        [courseId]: newCourseStats
       },
       lastSeen: serverTimestamp(),
     }, { merge: true });

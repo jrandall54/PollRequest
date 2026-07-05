@@ -11,34 +11,37 @@ import { arrayToCsv, downloadFile } from '../utils/helpers.js';
 /**
  * Get comprehensive per-student analytics
  */
-export async function getStudentAnalytics() {
+export async function getStudentAnalytics(courseId = 'all') {
   const students = await getAllStudents();
   return students
-    .filter(s => s.stats?.totalAnswered > 0)
-    .map(s => ({
-      uid: s.uid,
-      name: s.name,
-      icon: s.icon,
-      accuracy: s.stats?.totalAnswered > 0
-        ? Math.round((s.stats.totalCorrect / s.stats.totalAnswered) * 100)
-        : 0,
-      totalAnswered: s.stats?.totalAnswered || 0,
-      totalCorrect: s.stats?.totalCorrect || 0,
-      totalPoints: s.stats?.totalPoints || 0,
-      avgResponseTime: s.stats?.averageResponseTime || 0,
-      sessionsAttended: s.stats?.sessionsAttended || 0,
-      currentStreak: s.stats?.currentStreak || 0,
-      bestStreak: s.stats?.bestStreak || 0,
-      lastSeen: s.lastSeen,
-    }))
+    .map(s => {
+      const stats = courseId === 'all' ? s.stats : (s.courseStats?.[courseId] || {});
+      return {
+        uid: s.uid,
+        name: s.name,
+        icon: s.icon,
+        accuracy: stats.totalAnswered > 0
+          ? Math.round((stats.totalCorrect / stats.totalAnswered) * 100)
+          : 0,
+        totalAnswered: stats.totalAnswered || 0,
+        totalCorrect: stats.totalCorrect || 0,
+        totalPoints: stats.totalPoints || 0,
+        avgResponseTime: stats.averageResponseTime || 0,
+        sessionsAttended: stats.sessionsAttended || 0,
+        currentStreak: stats.currentStreak || 0,
+        bestStreak: stats.bestStreak || 0,
+        lastSeen: s.lastSeen,
+      };
+    })
+    .filter(s => s.totalAnswered > 0)
     .sort((a, b) => b.totalPoints - a.totalPoints);
 }
 
 /**
  * Get per-question analytics (Decoupled from Question Bank)
  */
-export async function getQuestionAnalytics() {
-  const sessions = await getAllSessions();
+export async function getQuestionAnalytics(courseId = 'all') {
+  const sessions = await getAllSessions(courseId === 'all' ? null : courseId);
 
   // Collect all responses across all sessions
   const allResponses = [];
@@ -99,8 +102,8 @@ export async function getQuestionAnalytics() {
 /**
  * Get session summaries
  */
-export async function getSessionSummaries() {
-  const sessions = await getAllSessions();
+export async function getSessionSummaries(courseId = 'all') {
+  const sessions = await getAllSessions(courseId === 'all' ? null : courseId);
   const summaries = [];
 
   for (const session of sessions) {

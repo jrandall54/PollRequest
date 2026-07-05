@@ -16,9 +16,14 @@ const COLLECTION = 'questions';
 /**
  * Get all questions
  */
-export async function getAllQuestions() {
+export async function getAllQuestions(courseId = null) {
   try {
-    const q = query(collection(db, COLLECTION), orderBy('createdAt', 'desc'));
+    let q;
+    if (courseId) {
+      q = query(collection(db, COLLECTION), where('courseId', '==', courseId), orderBy('createdAt', 'desc'));
+    } else {
+      q = query(collection(db, COLLECTION), orderBy('createdAt', 'desc'));
+    }
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (error) {
@@ -95,9 +100,10 @@ export async function getCategories() {
 /**
  * Create a new question
  */
-export async function createQuestion(questionData) {
+export async function createQuestion(questionData, courseId = null) {
   try {
     const data = {
+      courseId: courseId || 'General',
       text: questionData.text || '',
       codeSnippet: questionData.codeSnippet || null,
       codeSnippetMain: questionData.codeSnippetMain || null,
@@ -109,7 +115,7 @@ export async function createQuestion(questionData) {
       category: questionData.category || 'general',
       difficulty: questionData.difficulty || 'medium',
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
     };
     const docRef = await addDoc(collection(db, COLLECTION), data);
     return { id: docRef.id, ...data };
@@ -181,7 +187,7 @@ export async function deleteAllQuestions() {
 /**
  * Batch import questions (from parsed Markdown/JSON)
  */
-export async function batchImportQuestions(questions) {
+export async function batchImportQuestions(questions, courseId = null) {
   try {
     const batch = writeBatch(db);
     const refs = [];
@@ -189,6 +195,7 @@ export async function batchImportQuestions(questions) {
     questions.forEach(q => {
       const ref = doc(collection(db, COLLECTION));
       batch.set(ref, {
+        courseId: q.courseId || courseId || 'General',
         text: q.text || '',
         codeSnippet: q.codeSnippet || null,
         codeSnippetMain: q.codeSnippetMain || null,

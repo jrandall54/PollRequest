@@ -15,17 +15,38 @@ import { getAllQuestions } from '../../services/question-service.js';
 import { formatPercent, formatDate, showToast } from '../../utils/helpers.js';
 import { showModal } from '../../components/modal.js';
 
+import { renderHostHeader } from '../../components/host-header.js';
+import { hostStore } from '../../state.js';
+import { getAllCourses } from '../../services/course-service.js';
+
 export async function renderAnalytics() {
   const app = document.getElementById('app');
   let activeTab = 'students';
+  
+  let headerHtml = await renderHostHeader();
+  let courses = await getAllCourses();
+  
+  // Analytics can filter by 'all' or a specific course
+  let analyticsCourseId = hostStore.state.activeCourseId || 'all';
+
+  const courseOptions = courses.map(c => `
+    <option value="${c.id}" ${c.id === analyticsCourseId ? 'selected' : ''}>${c.name}</option>
+  `).join('');
 
   app.innerHTML = `
     <div class="host-layout screen">
-      <header class="host-header">
+      ${headerHtml}
+      <div class="screen-subheader" style="padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);">
         <button class="btn btn--ghost btn--sm" id="btn-back">
           ${getUiIcon('arrowLeft', 18)} Dashboard
         </button>
-        <h3>Analytics</h3>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <h3 style="margin: 0;">Analytics</h3>
+          <select id="analytics-course-filter" class="input" style="padding: 0.25rem 0.5rem; height: auto;">
+            <option value="all" ${analyticsCourseId === 'all' ? 'selected' : ''}>All Courses</option>
+            ${courseOptions}
+          </select>
+        </div>
         <div style="display:flex;gap:0.5rem;">
           <button class="btn btn--danger btn--sm" id="btn-wipe-database">
             ${getUiIcon('trash', 16)} Wipe Data
@@ -37,7 +58,7 @@ export async function renderAnalytics() {
             ${getUiIcon('download', 16)} Export All
           </button>
         </div>
-      </header>
+      </div>
 
       <main class="host-content">
         <div class="analytics-layout container">
@@ -55,6 +76,11 @@ export async function renderAnalytics() {
   `;
 
   document.getElementById('btn-back').addEventListener('click', () => router.navigate('/host/dashboard'));
+
+  document.getElementById('analytics-course-filter').addEventListener('change', (e) => {
+    analyticsCourseId = e.target.value;
+    loadTab(activeTab);
+  });
 
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -119,19 +145,13 @@ export async function renderAnalytics() {
 
     try {
       if (tab === 'students') {
-        currentData = await getStudentAnalytics();
+        currentData = await getStudentAnalytics(analyticsCourseId);
         renderStudentsTab(container);
       } else if (tab === 'questions') {
-        currentData = await getQuestionAnalytics();
-        currentData.sort((a, b) => {
-          const catA = a.category || '';
-          const catB = b.category || '';
-          if (catA !== catB) return catA.localeCompare(catB);
-          return a.correctRate - b.correctRate;
-        });
+        currentData = await getQuestionAnalytics(analyticsCourseId);
         renderQuestionsTab(container);
       } else {
-        currentData = await getSessionSummaries();
+        currentData = await getSessionSummaries(analyticsCourseId);
         renderSessionsTab(container);
       }
     } catch (e) {
