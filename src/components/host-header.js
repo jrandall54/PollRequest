@@ -30,8 +30,10 @@ export async function renderHostHeader(containerId = null) {
       
       <div class="host-header__center">
         <select id="hh-course-select" class="input" style="width: 200px; padding: 0.5rem; background: var(--bg-elevated); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: var(--radius-md);">
+          ${courses.length === 0 ? '<option value="" disabled selected>No courses found</option>' : ''}
           ${courseOptions}
           <option value="new_course">+ New Course...</option>
+          <option value="manage_courses">⚙️ Manage Courses...</option>
         </select>
       </div>
 
@@ -66,22 +68,51 @@ export async function renderHostHeader(containerId = null) {
         const val = e.target.value;
         if (val === 'new_course') {
           // Reset select back to active
-          e.target.value = hostStore.state.activeCourseId;
+          e.target.value = hostStore.state.activeCourseId || '';
           
           const name = prompt("Enter new course name:");
           if (name && name.trim()) {
             try {
               const newId = await createCourse({ name: name.trim() });
               hostStore.update({ activeCourseId: newId });
-              // The active screen should handle reloading, or we can just reload the window
               window.location.reload();
             } catch (err) {
-              alert("Failed to create course");
+              alert("Failed to create course. Check permissions.");
             }
           }
-        } else {
+        } else if (val === 'manage_courses') {
+          // Reset select back to active
+          e.target.value = hostStore.state.activeCourseId || '';
+          
+          // Simple manage flow for now: Rename or Delete the active course
+          if (hostStore.state.activeCourseId) {
+             const activeC = courses.find(c => c.id === hostStore.state.activeCourseId);
+             if (activeC) {
+                const action = prompt(`Manage Course: "${activeC.name}"\n\nType 'RENAME' to rename or 'DELETE' to delete this course:`);
+                if (action === 'RENAME') {
+                   const newName = prompt('New name for course:', activeC.name);
+                   if (newName && newName.trim()) {
+                      import('../services/course-service.js').then(({updateCourse}) => {
+                         updateCourse(activeC.id, {name: newName.trim()}).then(() => window.location.reload());
+                      });
+                   }
+                } else if (action === 'DELETE') {
+                   const confirmDel = confirm(`Are you SURE you want to delete "${activeC.name}"?\nThis will not delete the questions, but they will be orphaned.`);
+                   if (confirmDel) {
+                      import('../services/course-service.js').then(({deleteCourse}) => {
+                         deleteCourse(activeC.id).then(() => {
+                            hostStore.update({ activeCourseId: null });
+                            window.location.reload();
+                         });
+                      });
+                   }
+                }
+             }
+          } else {
+             alert("No active course to manage.");
+          }
+        } else if (val) {
           hostStore.update({ activeCourseId: val });
-          // The active screen should subscribe to hostStore to reload, or we simply reload the page
           window.location.reload(); 
         }
       });

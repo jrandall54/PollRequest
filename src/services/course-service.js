@@ -16,9 +16,14 @@ const COLLECTION = 'courses';
  */
 export async function getAllCourses() {
   try {
-    const q = query(collection(db, COLLECTION), orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    const snapshot = await getDocs(collection(db, COLLECTION));
+    const courses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort descending by createdAt (handle serverTimestamp or plain numbers)
+    return courses.sort((a, b) => {
+      const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt || 0);
+      const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt || 0);
+      return tB - tA;
+    });
   } catch (error) {
     console.error('Error fetching courses:', error);
     return [];
