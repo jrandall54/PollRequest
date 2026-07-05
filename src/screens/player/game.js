@@ -69,9 +69,14 @@ export async function renderPlayerGame(params) {
       renderAnswerView(data, qIdx);
     }
 
-    // Timer paused/resumed
-    if (qState === 'paused' && currentView === 'answering') {
-      updateTimerDisplay('PAUSED', 'warning');
+    // Timer paused/resumed/running
+    if (currentView === 'answering') {
+      if (data.timerPaused) {
+        clearTimerInterval();
+        updateTimerDisplay('PAUSED', 'warning');
+      } else if (data.timerEnd) {
+        startTimerDisplay(data, data.timeLimit || 30);
+      }
     }
 
     // Results shown
