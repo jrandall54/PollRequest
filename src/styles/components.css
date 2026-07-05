@@ -389,8 +389,8 @@
 
 /* Projector-sized answer buttons (host view) */
 .answer-btn--projector {
-  padding: clamp(0.5rem, 1.5vh, 1rem) 1.25rem;
-  font-size: clamp(0.85rem, 2vh, 1.25rem);
+  padding: clamp(0.75rem, 2vh, 1.25rem) 1.5rem;
+  font-size: clamp(1rem, 2.5vh, 1.4rem);
   border-radius: var(--radius-lg);
 }
 
