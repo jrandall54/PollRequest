@@ -85,8 +85,8 @@ export function showModal(options = {}) {
     close();
   });
 
-  // Close on backdrop click
-  overlay.addEventListener('click', (e) => {
+  // Close on backdrop click (using mousedown to prevent accidental close when dragging scrollbar)
+  overlay.addEventListener('mousedown', (e) => {
     if (e.target === overlay) {
       onCancel();
       close();
