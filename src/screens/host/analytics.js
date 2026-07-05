@@ -69,26 +69,21 @@ export async function renderAnalytics() {
     showModal({
       title: 'Wipe Entire Database?',
       content: '<p>Are you absolutely sure? This will delete ALL students, sessions, and questions from the database. This action cannot be undone.</p><p style="margin-top:1rem;color:var(--error);"><strong>We highly recommend exporting all data to JSON first.</strong></p>',
-      buttons: [
-        { text: 'Cancel', class: 'btn--ghost', close: true },
-        {
-          text: 'Wipe Everything',
-          class: 'btn--danger',
-          onClick: async () => {
-            try {
-              app.innerHTML = '<div class="flex-center screen"><div class="spinner"></div></div>';
-              await deleteAllStudents();
-              await deleteAllSessions();
-              await deleteAllQuestions();
-              showToast('Database wiped', 'success');
-              router.navigate('/host/dashboard');
-            } catch (e) {
-              showToast('Failed to wipe data: ' + e.message, 'error');
-              router.navigate('/host/analytics');
-            }
-          }
+      confirmText: 'Wipe Everything',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          app.innerHTML = '<div class="flex-center screen"><div class="spinner"></div></div>';
+          await deleteAllStudents();
+          await deleteAllSessions();
+          await deleteAllQuestions();
+          showToast('Database wiped', 'success');
+          router.navigate('/host/dashboard');
+        } catch (e) {
+          showToast('Failed to wipe data: ' + e.message, 'error');
+          router.navigate('/host/analytics');
         }
-      ]
+      }
     });
   });
 
@@ -219,17 +214,13 @@ export async function renderAnalytics() {
       showModal({
         title: 'Clear All Students?',
         content: 'Are you sure you want to delete all student profiles? This will not delete past sessions.',
-        buttons: [
-          { text: 'Cancel', class: 'btn--ghost', close: true },
-          {
-            text: 'Clear Students', class: 'btn--danger',
-            onClick: async () => {
-              await deleteAllStudents();
-              showToast('Students cleared', 'success');
-              loadTab('students');
-            }
-          }
-        ]
+        confirmText: 'Clear Students',
+        danger: true,
+        onConfirm: async () => {
+          await deleteAllStudents();
+          showToast('Students cleared', 'success');
+          loadTab('students');
+        }
       });
     });
 
@@ -305,17 +296,13 @@ export async function renderAnalytics() {
       showModal({
         title: 'Clear All Questions?',
         content: 'Are you sure you want to delete all questions? This will permanently remove them from the Question Bank.',
-        buttons: [
-          { text: 'Cancel', class: 'btn--ghost', close: true },
-          {
-            text: 'Clear Questions', class: 'btn--danger',
-            onClick: async () => {
-              await deleteAllQuestions();
-              showToast('Questions cleared', 'success');
-              loadTab('questions');
-            }
-          }
-        ]
+        confirmText: 'Clear Questions',
+        danger: true,
+        onConfirm: async () => {
+          await deleteAllQuestions();
+          showToast('Questions cleared', 'success');
+          loadTab('questions');
+        }
       });
     });
 
@@ -392,17 +379,13 @@ export async function renderAnalytics() {
       showModal({
         title: 'Clear All Sessions?',
         content: 'Are you sure you want to delete all past sessions? Their data will be lost.',
-        buttons: [
-          { text: 'Cancel', class: 'btn--ghost', close: true },
-          {
-            text: 'Clear Sessions', class: 'btn--danger',
-            onClick: async () => {
-              await deleteAllSessions();
-              showToast('Sessions cleared', 'success');
-              loadTab('sessions');
-            }
-          }
-        ]
+        confirmText: 'Clear Sessions',
+        danger: true,
+        onConfirm: async () => {
+          await deleteAllSessions();
+          showToast('Sessions cleared', 'success');
+          loadTab('sessions');
+        }
       });
     });
 
@@ -511,15 +494,11 @@ export async function renderAnalytics() {
         showModal({
           title: 'Confirm Delete',
           content: 'Are you sure you want to delete this row?',
-          buttons: [
-            { text: 'Cancel', class: 'btn--ghost', close: true },
-            {
-              text: 'Delete', class: 'btn--danger',
-              onClick: async () => {
-                await deleteFn(id);
-              }
-            }
-          ]
+          confirmText: 'Delete',
+          danger: true,
+          onConfirm: async () => {
+            await deleteFn(id);
+          }
         });
       }
     });
