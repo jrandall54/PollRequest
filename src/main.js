@@ -73,6 +73,18 @@ function init() {
       }
     }
 
+    // Host cleanup logic (terminate session)
+    if (from && (from.startsWith('/host/lobby') || from.startsWith('/host/game'))) {
+      if (!to.startsWith('/host/lobby') && !to.startsWith('/host/game') && !to.startsWith('/host/podium')) {
+        const sessionId = from.split('/')[3];
+        if (sessionId) {
+          import('./services/session-service.js').then(({ endSession }) => {
+            endSession(sessionId).catch(e => console.warn('Cleanup endSession failed', e));
+          });
+        }
+      }
+    }
+
     // Protect host routes (except login)
     if (to.startsWith('/host/') && to !== '/host/login') {
       const isHost = sessionStorage.getItem('pollrequest_host') === 'true';
@@ -87,14 +99,24 @@ function init() {
   // Handle page reload/close cleanup
   window.addEventListener('beforeunload', () => {
     const currentPath = router.getCurrentPath();
+    
+    // Player cleanup
     if (currentPath.startsWith('player/waiting') || currentPath.startsWith('player/game')) {
       const sessionId = currentPath.split('/')[2]; // e.g. player/waiting/abc1234
       const uid = localStorage.getItem('pollrequest_uid');
       if (uid && sessionId) {
-        // Use sendBeacon or standard fetch if available, but since we are relying on Firestore, 
-        // we import and call leaveSession and hope the network request fires before tab dies.
         import('./services/session-service.js').then(({ leaveSession }) => {
           leaveSession(sessionId, uid);
+        });
+      }
+    }
+
+    // Host cleanup
+    if (currentPath.startsWith('host/lobby') || currentPath.startsWith('host/game')) {
+      const sessionId = currentPath.split('/')[2];
+      if (sessionId) {
+        import('./services/session-service.js').then(({ endSession }) => {
+          endSession(sessionId);
         });
       }
     }

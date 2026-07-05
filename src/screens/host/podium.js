@@ -56,6 +56,8 @@ export async function renderPodium(params) {
         }
 
         await updateStudentStats(uid, {
+          name: data.players[uid]?.name,
+          icon: data.players[uid]?.icon,
           answered: pResponses.length,
           correct: pResponses.filter(r => r.correct).length,
           points: data.players[uid]?.points || 0,

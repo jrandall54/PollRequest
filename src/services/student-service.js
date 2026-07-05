@@ -62,57 +62,7 @@ export async function getProfile(uid) {
   }
 }
 
-/**
- * Create or update a student profile
- */
-export async function saveProfile(uid, profileData) {
-  try {
-    const docRef = doc(db, COLLECTION, uid);
-    const existing = await getDoc(docRef);
 
-    if (existing.exists()) {
-      await updateDoc(docRef, {
-        name: profileData.name,
-        icon: profileData.icon,
-        lastSeen: serverTimestamp(),
-      });
-    } else {
-      await setDoc(docRef, {
-        name: profileData.name,
-        icon: profileData.icon,
-        createdAt: serverTimestamp(),
-        lastSeen: serverTimestamp(),
-        stats: {
-          totalAnswered: 0,
-          totalCorrect: 0,
-          totalPoints: 0,
-          averageResponseTime: 0,
-          currentStreak: 0,
-          bestStreak: 0,
-          sessionsAttended: 0,
-        },
-      });
-    }
-
-    // Update local state
-    userStore.update({
-      uid,
-      name: profileData.name,
-      icon: profileData.icon,
-      isAuthenticated: true,
-    });
-
-    // Save to localStorage for quick return
-    localStorage.setItem('pollrequest_uid', uid);
-    localStorage.setItem('pollrequest_name', profileData.name);
-    localStorage.setItem('pollrequest_icon', profileData.icon);
-
-    return true;
-  } catch (error) {
-    console.error('Error saving profile:', error);
-    throw error;
-  }
-}
 
 /**
  * Try to reclaim a profile (match name + icon from a different device)
@@ -197,8 +147,9 @@ export async function getAllStudents() {
  */
 export async function updateStudentStats(uid, sessionStats) {
   try {
-    const profile = await getProfile(uid);
-    if (!profile) return;
+    const ref = doc(db, COLLECTION, uid);
+    const snap = await getDoc(ref);
+    const profile = snap.exists() ? snap.data() : { uid, stats: {} };
 
     const stats = profile.stats || {};
     const newTotalAnswered = (stats.totalAnswered || 0) + sessionStats.answered;
@@ -212,16 +163,21 @@ export async function updateStudentStats(uid, sessionStats) {
       ? (oldTotal + sessionStats.totalResponseTime) / newTotalAnswered
       : 0;
 
-    await updateDoc(doc(db, COLLECTION, uid), {
-      'stats.totalAnswered': newTotalAnswered,
-      'stats.totalCorrect': newTotalCorrect,
-      'stats.totalPoints': newTotalPoints,
-      'stats.averageResponseTime': Math.round(newAvg),
-      'stats.sessionsAttended': newSessionsAttended,
-      'stats.currentStreak': sessionStats.finalStreak || 0,
-      'stats.bestStreak': Math.max(stats.bestStreak || 0, sessionStats.bestStreak || 0),
+    await setDoc(ref, {
+      uid,
+      name: sessionStats.name || profile.name || 'Unknown',
+      icon: sessionStats.icon || profile.icon || 'ghost',
+      stats: {
+        totalAnswered: newTotalAnswered,
+        totalCorrect: newTotalCorrect,
+        totalPoints: newTotalPoints,
+        averageResponseTime: Math.round(newAvg),
+        sessionsAttended: newSessionsAttended,
+        currentStreak: sessionStats.finalStreak || 0,
+        bestStreak: Math.max(stats.bestStreak || 0, sessionStats.bestStreak || 0),
+      },
       lastSeen: serverTimestamp(),
-    });
+    }, { merge: true });
   } catch (error) {
     console.error('Error updating student stats:', error);
   }

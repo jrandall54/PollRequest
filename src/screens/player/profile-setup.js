@@ -6,7 +6,7 @@
 import router from '../../router.js';
 import { getIconSvg } from '../../utils/constants.js';
 import { createIconPicker } from '../../components/icon-picker.js';
-import { initAuth, saveProfile, reclaimProfile, forceNewIdentity } from '../../services/student-service.js';
+import { initAuth, reclaimProfile, forceNewIdentity } from '../../services/student-service.js';
 import { joinSession, leaveSession } from '../../services/session-service.js';
 import { showToast } from '../../utils/helpers.js';
 import { userStore } from '../../state.js';
@@ -145,9 +145,6 @@ export async function renderProfileSetup(params) {
 
       // Join the session FIRST to validate name uniqueness
       await joinSession(sessionId, { uid, name, icon: selectedIcon });
-
-      // Save profile only if join was successful
-      await saveProfile(uid, { name, icon: selectedIcon });
 
       router.navigate(`/player/waiting/${sessionId}`);
     } catch (e) {

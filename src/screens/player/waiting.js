@@ -6,7 +6,7 @@
 import router from '../../router.js';
 import { getIconSvg } from '../../utils/constants.js';
 import { listenToSession, joinSession } from '../../services/session-service.js';
-import { loadSavedIdentity, initAuth, saveProfile } from '../../services/student-service.js';
+import { loadSavedIdentity, initAuth } from '../../services/student-service.js';
 import { userStore } from '../../state.js';
 import { showToast } from '../../utils/helpers.js';
 import { showStudentStats } from '../../components/student-stats-modal.js';
@@ -41,8 +41,6 @@ export async function renderWaiting(params) {
         identity.uid = uid;
         // Join session first to validate name uniqueness
         await joinSession(sessionId, { uid, name: identity.name, icon: identity.icon });
-        // Save profile only if join was successful
-        await saveProfile(uid, { name: identity.name, icon: identity.icon });
       } catch (e) {
         console.warn('Could not rejoin session:', e);
         if (e.message === 'name_taken') {
@@ -116,6 +114,13 @@ export async function renderWaiting(params) {
     if (data.currentQuestionState === 'accepting' || data.currentQuestionState === 'paused') {
       unsub();
       router.navigate(`/player/game/${sessionId}`);
+    }
+
+    // If host ended/left the session
+    if (data.status === 'ended') {
+      unsub();
+      showToast('Session ended by host', 'info');
+      router.navigate('/');
     }
   });
 
