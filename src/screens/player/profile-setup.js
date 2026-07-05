@@ -6,7 +6,7 @@
 import router from '../../router.js';
 import { getIconSvg } from '../../utils/constants.js';
 import { createIconPicker } from '../../components/icon-picker.js';
-import { initAuth, saveProfile } from '../../services/student-service.js';
+import { initAuth, saveProfile, reclaimProfile } from '../../services/student-service.js';
 import { joinSession } from '../../services/session-service.js';
 import { showToast } from '../../utils/helpers.js';
 
@@ -120,7 +120,14 @@ export async function renderProfileSetup(params) {
 
     try {
       // Authenticate anonymously
-      const uid = await initAuth();
+      let uid = await initAuth();
+
+      // Check if this exact name + icon pair already exists in the database
+      // If so, we "reclaim" that profile (act as a low-security login)
+      const reclaimed = await reclaimProfile(name, selectedIcon);
+      if (reclaimed) {
+        uid = reclaimed.uid;
+      }
 
       // Join the session FIRST to validate name uniqueness
       await joinSession(sessionId, { uid, name, icon: selectedIcon });
@@ -131,7 +138,7 @@ export async function renderProfileSetup(params) {
       router.navigate(`/player/waiting/${sessionId}`);
     } catch (e) {
       if (e.message === 'name_taken') {
-        showToast('This name is already taken. Please choose another.', 'error');
+        showToast('This name is already taken in the current session.', 'error');
       } else {
         showToast('Failed to join: ' + e.message, 'error');
       }
