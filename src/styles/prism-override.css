@@ -89,10 +89,4 @@ code[class*="language-"] {
   color: #475569 !important;
 }
 
-/* ── Projector Readability ──────────────────────────────────── */
-@media (min-width: 1024px) {
-  pre[class*="language-"] {
-    font-size: clamp(1rem, 1.8vw, 1.3rem) !important;
-    padding: 2rem !important;
-  }
-}
+/* ── Removed Projector Readability block to allow contextual scaling ── */

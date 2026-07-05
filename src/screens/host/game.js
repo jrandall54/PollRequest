@@ -116,7 +116,7 @@ export async function renderHostGame(params) {
 
           ${isMulti ? '<div class="text-center text-muted text-sm" style="margin-bottom:0.5rem;">Select all that apply</div>' : ''}
 
-          <div class="question-answers-grid ${question.choices.length <= 3 ? 'question-answers-grid--single-col' : ''}">
+          <div class="question-answers-grid">
             ${question.choices.map((c, i) => `
               <div class="answer-btn answer-btn--${ANSWER_COLORS[i]} answer-btn--projector answer-btn--disabled">
                 <span class="answer-btn__label">${ANSWER_LABELS[i]}</span>
