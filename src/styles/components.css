@@ -671,6 +671,11 @@
   outline: none;
 }
 
+.live-editor-textarea::selection {
+  background: var(--accent-primary-soft) !important;
+  color: transparent !important;
+}
+
 .live-editor-pre {
   position: relative;
   z-index: 1;

@@ -119,6 +119,8 @@ export function showModal(options = {}) {
         opacity: 0;
         transition: opacity 0.2s ease;
         padding: 1rem;
+        user-select: none;
+        -webkit-user-select: none;
       }
       .modal-overlay--visible {
         opacity: 1;
@@ -137,6 +139,14 @@ export function showModal(options = {}) {
         overflow-y: auto;
         transform: scale(0.95) translateY(10px);
         transition: transform 0.25s ease;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .modal__content input,
+      .modal__content textarea,
+      .modal__content .live-editor-container {
+        user-select: text;
+        -webkit-user-select: text;
       }
       .modal__content--large { max-width: 700px; }
       .modal__content--small { max-width: 360px; }
