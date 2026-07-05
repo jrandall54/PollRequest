@@ -275,6 +275,7 @@ export async function renderAnalytics() {
       return;
     }
 
+    container.innerHTML = `
       <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
         <button class="btn btn--danger btn--sm" id="btn-clear-questions">${getUiIcon('trash', 16)} Clear All Questions</button>
       </div>
