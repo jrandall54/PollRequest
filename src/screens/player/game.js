@@ -353,6 +353,8 @@ export async function renderPlayerGame(params) {
         timerEl.className = 'answer-screen__timer-badge answer-screen__timer-badge--danger';
       } else if (remaining <= 10) {
         timerEl.className = 'answer-screen__timer-badge answer-screen__timer-badge--warning';
+      } else {
+        timerEl.className = 'answer-screen__timer-badge';
       }
 
       if (remaining <= 0) {
