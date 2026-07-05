@@ -266,6 +266,9 @@ export async function renderPlayerGame(params) {
       </div>
     ` : '';
 
+    const isLastQuestion = qIdx === questions.length - 1;
+    const waitingText = isLastQuestion ? 'Waiting for final results...' : 'Next question coming up...';
+
     if (currentView === 'result' && document.querySelector('.player-result')) {
       // Already showing result from submit, just update the message and inject the answer
       const resultScreen = document.querySelector('.player-result');
@@ -273,7 +276,7 @@ export async function renderPlayerGame(params) {
       const waitMsg = waitMsgs[waitMsgs.length - 1]; // safely get the last text-muted element
       
       if (waitMsg && !document.getElementById('injected-correct')) {
-        waitMsg.textContent = 'Next question coming up...';
+        waitMsg.textContent = waitingText;
         waitMsg.insertAdjacentHTML('beforebegin', `<div id="injected-correct" style="width: 100%; max-width: 400px; margin: 0 auto;">${correctHtml}</div>`);
       }
       return;
@@ -291,7 +294,7 @@ export async function renderPlayerGame(params) {
         
         <div style="width: 100%; max-width: 400px; margin: 0 auto;">${correctHtml}</div>
         
-        <div class="text-muted" style="margin-top:1.5rem;">Next question coming up...</div>
+        <div class="text-muted" style="margin-top:1.5rem;">${waitingText}</div>
       </div>
     `;
     streak = 0;
