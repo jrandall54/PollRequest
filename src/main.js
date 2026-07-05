@@ -27,6 +27,7 @@ import { renderPlayerGame } from './screens/player/game.js';
 function init() {
   // Load saved theme
   loadSavedTheme();
+  createGlobalThemeSwitcher();
 
   // Check Firebase configuration
   if (!isFirebaseConfigured()) {
@@ -69,6 +70,26 @@ function init() {
 
   // Start routing
   router.start();
+}
+
+// ── Global Theme Switcher ───────────────────────────────────
+function createGlobalThemeSwitcher() {
+  const container = document.createElement('div');
+  container.style.cssText = `
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 99999;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+  `;
+  document.body.appendChild(container);
+  
+  // Use existing component logic
+  import('./components/theme-switcher.js').then(({ createThemeSwitcher }) => {
+    createThemeSwitcher(container);
+  });
 }
 
 // ── Firebase Warning Banner ─────────────────────────────────

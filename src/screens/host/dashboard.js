@@ -36,9 +36,9 @@ export async function renderDashboard() {
           <span class="text-gradient">PollRequest</span>
         </div>
         <div class="host-header__actions">
-          <div id="theme-switcher-container"></div>
-          <button class="btn btn--ghost btn--sm" id="btn-logout" title="Log out">
-            ${getUiIcon('logOut', 18)}
+          <button class="btn btn--secondary" id="db-logout">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
           </button>
         </div>
       </header>
@@ -86,9 +86,6 @@ export async function renderDashboard() {
     </div>
   `;
 
-  // Theme switcher
-  createThemeSwitcher(document.getElementById('theme-switcher-container'));
-
   // Navigation
   document.getElementById('card-new-session').addEventListener('click', () => {
     router.navigate('/host/session-setup');
@@ -99,7 +96,7 @@ export async function renderDashboard() {
   document.getElementById('card-analytics').addEventListener('click', () => {
     router.navigate('/host/analytics');
   });
-  document.getElementById('btn-logout').addEventListener('click', () => {
+  document.getElementById('db-logout').addEventListener('click', () => {
     sessionStorage.removeItem('pollrequest_host');
     router.navigate('/');
   });
