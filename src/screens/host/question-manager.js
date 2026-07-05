@@ -5,7 +5,7 @@
 
 import router from '../../router.js';
 import { getUiIcon } from '../../utils/constants.js';
-import { getAllQuestions, createQuestion, updateQuestion, deleteQuestion, deleteAllQuestions } from '../../services/question-service.js';
+import { getAllQuestions, createQuestion, updateQuestion, deleteQuestion, deleteAllQuestions, deleteBank, getBanks } from '../../services/question-service.js';
 import { importFromFile } from '../../services/import-service.js';
 import { showModal } from '../../components/modal.js';
 import { showToast } from '../../utils/helpers.js';
@@ -53,6 +53,14 @@ export async function renderQuestionManager() {
   function renderPage() {
     sortQuestions();
 
+    const banksMap = {};
+    questions.forEach(q => {
+      const b = q.bank || q.category || 'Custom Questions';
+      if (!banksMap[b]) banksMap[b] = [];
+      banksMap[b].push(q);
+    });
+    const banks = Object.keys(banksMap).sort();
+
     app.innerHTML = `
       <div class="host-layout screen">
         ${headerHtml}
@@ -84,47 +92,65 @@ export async function renderQuestionManager() {
                 <div class="empty-state__text">Add questions manually or import from a Markdown / JSON file.</div>
               </div>
             ` : `
-              <div class="question-manager__toolbar">
-                <span class="text-muted text-sm">${questions.length} question${questions.length !== 1 ? 's' : ''}</span>
+              <div class="question-manager__toolbar" style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="text-muted text-sm">${questions.length} question${questions.length !== 1 ? 's' : ''} across ${banks.length} sub-bank${banks.length !== 1 ? 's' : ''}</span>
+                <button class="btn btn--secondary btn--sm" id="btn-move-bulk" disabled>
+                  ${getUiIcon('folder', 14)} Move Selected (<span id="bulk-count">0</span>)
+                </button>
               </div>
-              <div class="table-wrap">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th class="sortable" data-sort="text" style="width:50%;cursor:pointer;">Question ${sortCol === 'text' ? (sortAsc ? '↑' : '↓') : ''}</th>
-                      <th class="sortable" data-sort="category" style="cursor:pointer;">Category ${sortCol === 'category' ? (sortAsc ? '↑' : '↓') : ''}</th>
-                      <th class="sortable" data-sort="difficulty" style="cursor:pointer;">Difficulty ${sortCol === 'difficulty' ? (sortAsc ? '↑' : '↓') : ''}</th>
-                      <th class="sortable" data-sort="timeLimit" style="cursor:pointer;">Time ${sortCol === 'timeLimit' ? (sortAsc ? '↑' : '↓') : ''}</th>
-                      <th class="sortable" data-sort="choices" style="cursor:pointer;">Choices ${sortCol === 'choices' ? (sortAsc ? '↑' : '↓') : ''}</th>
-                      <th style="width:80px;">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${questions.map(q => `
-                      <tr data-id="${q.id}">
-                        <td>
-                          <div style="font-weight:500;">${escapeHtml(q.text.length > 60 ? q.text.substring(0, 60) + '...' : q.text)}</div>
-                          ${q.codeSnippet ? '<span class="badge badge--neutral" style="margin-top:0.25rem;">Has code</span>' : ''}
-                        </td>
-                        <td><span class="badge badge--primary">${q.category || 'general'}</span></td>
-                        <td><span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span></td>
-                        <td>${q.timeLimit || 30}s</td>
-                        <td>${q.choices?.length || 0}</td>
-                        <td>
-                          <div style="display:flex;gap:0.25rem;">
-                            <button class="btn btn--ghost btn--icon btn-edit" data-id="${q.id}" title="Edit">
-                              ${getUiIcon('edit', 16)}
-                            </button>
-                            <button class="btn btn--ghost btn--icon btn-delete" data-id="${q.id}" title="Delete" style="color:var(--error);">
-                              ${getUiIcon('trash', 16)}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
+
+              ${banks.map(bank => `
+                <div class="card" style="margin-top: 1.5rem; padding: 0; overflow: hidden; border: 1px solid var(--border-color);">
+                  <div style="padding: 1rem 1.5rem; background: var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                      <input type="checkbox" class="bank-select-all" data-bank="${escapeHtml(bank)}" style="width:1.1rem;height:1.1rem;accent-color:var(--accent-primary);" title="Select all in ${escapeHtml(bank)}" />
+                      <h3 style="margin:0;font-size:1.1rem;">${escapeHtml(bank)}</h3>
+                      <span class="badge badge--neutral">${banksMap[bank].length}</span>
+                    </div>
+                    <button class="btn btn--ghost btn--icon btn-delete-bank" data-bank="${escapeHtml(bank)}" title="Delete Sub-Bank" style="color:var(--error);">
+                      ${getUiIcon('trash', 16)}
+                    </button>
+                  </div>
+                  <div class="table-wrap">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th style="width: 40px;"></th>
+                          <th class="sortable" data-sort="text" style="width:50%;cursor:pointer;">Question ${sortCol === 'text' ? (sortAsc ? '↑' : '↓') : ''}</th>
+                          <th class="sortable" data-sort="difficulty" style="cursor:pointer;">Difficulty ${sortCol === 'difficulty' ? (sortAsc ? '↑' : '↓') : ''}</th>
+                          <th class="sortable" data-sort="timeLimit" style="cursor:pointer;">Time ${sortCol === 'timeLimit' ? (sortAsc ? '↑' : '↓') : ''}</th>
+                          <th style="width:80px;">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${banksMap[bank].map(q => `
+                          <tr data-id="${q.id}">
+                            <td>
+                              <input type="checkbox" class="q-select-cb" data-id="${q.id}" data-bank="${escapeHtml(bank)}" style="width:1.1rem;height:1.1rem;accent-color:var(--accent-primary);" />
+                            </td>
+                            <td>
+                              <div style="font-weight:500;">${escapeHtml(q.text.length > 60 ? q.text.substring(0, 60) + '...' : q.text)}</div>
+                              ${q.codeSnippet ? '<span class="badge badge--neutral" style="margin-top:0.25rem;">Has code</span>' : ''}
+                            </td>
+                            <td><span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span></td>
+                            <td>${q.timeLimit || 30}s</td>
+                            <td>
+                              <div style="display:flex;gap:0.25rem;">
+                                <button class="btn btn--ghost btn--icon btn-edit" data-id="${q.id}" title="Edit">
+                                  ${getUiIcon('edit', 16)}
+                                </button>
+                                <button class="btn btn--ghost btn--icon btn-delete" data-id="${q.id}" title="Delete" style="color:var(--error);">
+                                  ${getUiIcon('trash', 16)}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              `).join('')}
             `}
           </div>
         </main>
@@ -136,6 +162,101 @@ export async function renderQuestionManager() {
     document.getElementById('btn-add')?.addEventListener('click', () => showQuestionForm());
     document.getElementById('btn-import')?.addEventListener('click', () => handleImport());
     document.getElementById('btn-clear-bank')?.addEventListener('click', () => handleClearBank());
+
+    // Bulk Move Logic
+    const qCheckboxes = document.querySelectorAll('.q-select-cb');
+    const bankCheckboxes = document.querySelectorAll('.bank-select-all');
+    const bulkBtn = document.getElementById('btn-move-bulk');
+    const bulkCount = document.getElementById('bulk-count');
+    
+    function updateBulkBtn() {
+      const selected = document.querySelectorAll('.q-select-cb:checked').length;
+      bulkCount.textContent = selected;
+      bulkBtn.disabled = selected === 0;
+    }
+
+    qCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        const bank = cb.dataset.bank;
+        const bankCb = document.querySelector(`.bank-select-all[data-bank="${escapeHtml(bank)}"]`);
+        const allInBank = document.querySelectorAll(`.q-select-cb[data-bank="${escapeHtml(bank)}"]`);
+        const allChecked = Array.from(allInBank).every(c => c.checked);
+        bankCb.checked = allChecked;
+        updateBulkBtn();
+      });
+    });
+
+    bankCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        const bank = cb.dataset.bank;
+        const allInBank = document.querySelectorAll(`.q-select-cb[data-bank="${escapeHtml(bank)}"]`);
+        allInBank.forEach(qcb => qcb.checked = cb.checked);
+        updateBulkBtn();
+      });
+    });
+
+    bulkBtn?.addEventListener('click', async () => {
+      const selectedIds = Array.from(document.querySelectorAll('.q-select-cb:checked')).map(cb => cb.dataset.id);
+      if (selectedIds.length === 0) return;
+      
+      const banks = await getBanks(hostStore.state.activeCourseId);
+      
+      showModal({
+        title: 'Move Questions to Sub-Bank',
+        content: `
+          <div class="input-group">
+            <label>Select an existing Sub-Bank</label>
+            <select class="select" id="bulk-move-existing">
+              <option value="">-- Choose existing --</option>
+              ${banks.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
+            </select>
+          </div>
+          <div style="text-align:center;margin:0.5rem 0;">OR</div>
+          <div class="input-group">
+            <label>Create a new Sub-Bank</label>
+            <input class="input" id="bulk-move-new" placeholder="e.g., Week 2 Quiz" />
+          </div>
+        `,
+        confirmText: 'Move Questions',
+        onConfirm: async () => {
+          const existing = document.getElementById('bulk-move-existing').value;
+          const newBank = document.getElementById('bulk-move-new').value.trim();
+          const targetBank = newBank || existing;
+          
+          if (!targetBank) {
+            showToast('Please select or type a Sub-Bank name', 'error');
+            return false;
+          }
+          
+          app.innerHTML = '<div class="flex-center screen"><div class="spinner"></div></div>';
+          for (const qid of selectedIds) {
+            await updateQuestion(qid, { bank: targetBank });
+          }
+          showToast(`Moved ${selectedIds.length} questions to ${targetBank}`, 'success');
+          
+          questions = await getAllQuestions(hostStore.state.activeCourseId);
+          renderPage();
+        }
+      });
+    });
+
+    document.querySelectorAll('.btn-delete-bank').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bank = btn.dataset.bank;
+        showModal({
+          title: 'Delete Sub-Bank',
+          content: `<p>Are you sure you want to delete the Sub-Bank <strong>${escapeHtml(bank)}</strong>?</p><p class="text-muted" style="margin-top:0.5rem;">This will permanently delete all questions within this bank.</p>`,
+          danger: true,
+          confirmText: 'Delete Everything',
+          onConfirm: async () => {
+            await deleteBank(hostStore.state.activeCourseId, bank);
+            showToast(`Deleted Sub-Bank ${bank}`, 'success');
+            questions = await getAllQuestions(hostStore.state.activeCourseId);
+            renderPage();
+          }
+        });
+      });
+    });
 
     document.querySelectorAll('.sortable').forEach(th => {
       th.addEventListener('click', () => {
@@ -174,8 +295,8 @@ export async function renderQuestionManager() {
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
           <div class="input-group">
-            <label>Category</label>
-            <input class="input" id="qf-category" placeholder="e.g., loops" value="${existing?.category || ''}" />
+            <label>Sub-Bank</label>
+            <input class="input" id="qf-bank" placeholder="e.g., Custom Questions" value="${existing?.bank || existing?.category || 'Custom Questions'}" />
           </div>
           <div class="input-group">
             <label>Difficulty</label>
@@ -371,7 +492,7 @@ export async function renderQuestionManager() {
       multiSelect,
       timeLimit: parseInt(document.getElementById('qf-time')?.value) || DEFAULT_TIME_LIMIT,
       explanation: document.getElementById('qf-explanation')?.value.trim() || null,
-      category: document.getElementById('qf-category')?.value.trim() || 'general',
+      bank: document.getElementById('qf-bank')?.value.trim() || 'Custom Questions',
       difficulty: document.getElementById('qf-difficulty')?.value || 'medium',
     };
   }

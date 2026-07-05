@@ -34,6 +34,7 @@ export async function importFromFile(file, courseId = null) {
     const result = validateQuestion(q);
     if (result.valid) {
       if (courseId) q.courseId = courseId;
+      q.bank = file.name; // Assign the filename as the sub-bank
       valid.push(q);
     } else {
       skipped++;

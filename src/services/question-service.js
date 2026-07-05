@@ -76,30 +76,25 @@ export async function getQuestionsByIds(questionIds) {
 }
 
 /**
- * Get questions filtered by category
+ * Get questions filtered by bank
  */
-export async function getQuestionsByCategory(category) {
+export async function getQuestionsByBank(courseId, bankName) {
   try {
-    const q = query(
-      collection(db, COLLECTION),
-      where('category', '==', category),
-      orderBy('createdAt', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    const questions = await getAllQuestions(courseId);
+    return questions.filter(q => (q.bank || q.category || 'Custom Questions') === bankName);
   } catch (error) {
-    console.error('Error fetching questions by category:', error);
+    console.error('Error fetching questions by bank:', error);
     return [];
   }
 }
 
 /**
- * Get unique categories from all questions
+ * Get unique banks from all questions
  */
-export async function getCategories() {
-  const questions = await getAllQuestions();
-  const categories = new Set(questions.map(q => q.category).filter(Boolean));
-  return [...categories].sort();
+export async function getBanks(courseId = null) {
+  const questions = await getAllQuestions(courseId);
+  const banks = new Set(questions.map(q => q.bank || q.category).filter(Boolean));
+  return [...banks].sort();
 }
 
 /**
@@ -109,6 +104,7 @@ export async function createQuestion(questionData, courseId = null) {
   try {
     const data = {
       courseId: courseId || 'General',
+      bank: questionData.bank || 'Custom Questions',
       text: questionData.text || '',
       codeSnippet: questionData.codeSnippet || null,
       codeSnippetMain: questionData.codeSnippetMain || null,
@@ -117,7 +113,6 @@ export async function createQuestion(questionData, courseId = null) {
       multiSelect: questionData.multiSelect || false,
       timeLimit: questionData.timeLimit || DEFAULT_TIME_LIMIT,
       explanation: questionData.explanation || null,
-      category: questionData.category || 'general',
       difficulty: questionData.difficulty || 'medium',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -148,14 +143,36 @@ export async function updateQuestion(questionId, updates) {
 }
 
 /**
- * Delete a question
+ * Delete a specific question
  */
 export async function deleteQuestion(questionId) {
   try {
-    await deleteDoc(doc(db, COLLECTION, questionId));
+    const docRef = doc(db, COLLECTION, questionId);
+    await deleteDoc(docRef);
     return true;
   } catch (error) {
     console.error('Error deleting question:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete an entire bank of questions
+ */
+export async function deleteBank(courseId, bankName) {
+  try {
+    const questions = await getAllQuestions(courseId);
+    const bankQs = questions.filter(q => (q.bank || q.category || 'Custom Questions') === bankName);
+    
+    const batch = writeBatch(db);
+    bankQs.forEach(q => {
+      const docRef = doc(db, COLLECTION, q.id);
+      batch.delete(docRef);
+    });
+    await batch.commit();
+    return true;
+  } catch (error) {
+    console.error('Error deleting bank:', error);
     throw error;
   }
 }
@@ -201,6 +218,7 @@ export async function batchImportQuestions(questions, courseId = null) {
       const ref = doc(collection(db, COLLECTION));
       batch.set(ref, {
         courseId: q.courseId || courseId || 'General',
+        bank: q.bank || 'Imported Questions',
         text: q.text || '',
         codeSnippet: q.codeSnippet || null,
         codeSnippetMain: q.codeSnippetMain || null,
@@ -209,10 +227,9 @@ export async function batchImportQuestions(questions, courseId = null) {
         multiSelect: q.multiSelect || false,
         timeLimit: q.timeLimit || DEFAULT_TIME_LIMIT,
         explanation: q.explanation || null,
-        category: q.category || 'general',
         difficulty: q.difficulty || 'medium',
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
       refs.push(ref.id);
     });
@@ -228,8 +245,8 @@ export async function batchImportQuestions(questions, courseId = null) {
 /**
  * Export all questions as JSON
  */
-export async function exportQuestionsAsJson() {
-  const questions = await getAllQuestions();
+export async function exportQuestionsAsJson(courseId = null) {
+  const questions = await getAllQuestions(courseId);
   return questions.map(q => ({
     text: q.text,
     codeSnippet: q.codeSnippet,
@@ -239,7 +256,7 @@ export async function exportQuestionsAsJson() {
     multiSelect: q.multiSelect,
     timeLimit: q.timeLimit,
     explanation: q.explanation,
-    category: q.category,
+    bank: q.bank || q.category || 'Custom Questions',
     difficulty: q.difficulty,
   }));
 }

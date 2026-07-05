@@ -27,6 +27,14 @@ export async function renderSessionSetup() {
 
   let selectedIds = new Set();
 
+  const banksMap = {};
+  questions.forEach(q => {
+    const b = q.bank || q.category || 'Custom Questions';
+    if (!banksMap[b]) banksMap[b] = [];
+    banksMap[b].push(q);
+  });
+  const banks = Object.keys(banksMap).sort();
+
   app.innerHTML = `
     <div class="host-layout screen">
       ${headerHtml}
@@ -51,7 +59,7 @@ export async function renderSessionSetup() {
             <h4>Select Questions <span class="badge badge--primary" id="selected-count">0 selected</span></h4>
             <div style="display:flex;gap:0.5rem;">
               <button class="btn btn--ghost btn--sm" id="btn-select-all">Select All</button>
-              <button class="btn btn--ghost btn--sm" id="btn-select-none">Clear</button>
+              <button class="btn btn--ghost btn--sm" id="btn-select-none">Clear All</button>
             </div>
           </div>
 
@@ -66,18 +74,30 @@ export async function renderSessionSetup() {
             </div>
           ` : `
             <div class="session-setup__question-list" id="question-list">
-              ${questions.map((q, i) => `
-                <label class="session-question-item" data-id="${q.id}">
-                  <input type="checkbox" class="question-checkbox" value="${q.id}" style="width:1.25rem;height:1.25rem;accent-color:var(--accent-primary);" />
-                  <span class="session-question-item__text">
-                    ${escapeHtml(q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text)}
-                  </span>
-                  <div class="session-question-item__meta">
-                    <span class="badge badge--neutral">${q.category || 'general'}</span>
-                    <span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span>
-                    <span class="text-muted text-sm">${q.timeLimit || 30}s</span>
+              ${banks.map(bank => `
+                <div class="setup-bank-group" style="margin-bottom: 1.5rem;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-color);">
+                    <h5 style="margin:0;">${escapeHtml(bank)} <span class="text-muted text-sm" style="font-weight:normal; margin-left:0.5rem;">(${banksMap[bank].length})</span></h5>
+                    <div style="display:flex; gap:0.5rem;">
+                      <button class="btn btn--ghost btn--sm btn-select-bank" data-bank="${escapeHtml(bank)}">Select Bank</button>
+                      <button class="btn btn--ghost btn--sm btn-clear-bank-sel" data-bank="${escapeHtml(bank)}">Clear Bank</button>
+                    </div>
                   </div>
-                </label>
+                  <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    ${banksMap[bank].map(q => `
+                      <label class="session-question-item" data-id="${q.id}">
+                        <input type="checkbox" class="question-checkbox" data-bank="${escapeHtml(bank)}" value="${q.id}" style="width:1.25rem;height:1.25rem;accent-color:var(--accent-primary);" />
+                        <span class="session-question-item__text">
+                          ${escapeHtml(q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text)}
+                        </span>
+                        <div class="session-question-item__meta">
+                          <span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span>
+                          <span class="text-muted text-sm">${q.timeLimit || 30}s</span>
+                        </div>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
               `).join('')}
             </div>
           `}
@@ -103,7 +123,7 @@ export async function renderSessionSetup() {
     });
   });
 
-  // Select all / clear
+  // Select all / clear all globally
   document.getElementById('btn-select-all')?.addEventListener('click', () => {
     document.querySelectorAll('.question-checkbox').forEach(cb => {
       cb.checked = true;
@@ -118,6 +138,29 @@ export async function renderSessionSetup() {
     });
     selectedIds.clear();
     updateCount();
+  });
+
+  // Select / clear by bank
+  document.querySelectorAll('.btn-select-bank').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bank = btn.dataset.bank;
+      document.querySelectorAll(`.question-checkbox[data-bank="${escapeHtml(bank)}"]`).forEach(cb => {
+        cb.checked = true;
+        selectedIds.add(cb.value);
+      });
+      updateCount();
+    });
+  });
+
+  document.querySelectorAll('.btn-clear-bank-sel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bank = btn.dataset.bank;
+      document.querySelectorAll(`.question-checkbox[data-bank="${escapeHtml(bank)}"]`).forEach(cb => {
+        cb.checked = false;
+        selectedIds.delete(cb.value);
+      });
+      updateCount();
+    });
   });
 
   // Start session
