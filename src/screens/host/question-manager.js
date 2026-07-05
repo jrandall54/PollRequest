@@ -156,8 +156,10 @@ export async function renderQuestionManager() {
                       <tbody>
                         ${sortedTypes.map(type => `
                           <tr>
-                            <td colspan="5" style="background: var(--bg-tertiary); padding: 0.5rem 1rem; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-                              <strong style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">${escapeHtml(type)}</strong>
+                            <td colspan="5" style="padding: 2rem 1rem 0.75rem 0.5rem; border-bottom: none;">
+                              <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">
+                                ${escapeHtml(type)}
+                              </h4>
                             </td>
                           </tr>
                           ${typesMap[type].map(q => `
@@ -354,9 +356,6 @@ export async function renderQuestionManager() {
 
     const formContent = document.createElement('div');
     formContent.innerHTML = `
-      <datalist id="question-types-list">
-        ${courseTypes.map(t => `<option value="${escapeHtml(t)}"></option>`).join('')}
-      </datalist>
       <div style="display:flex;flex-direction:column;gap:1rem;">
         <div class="input-group">
           <label>Question Title (optional)</label>
@@ -373,7 +372,13 @@ export async function renderQuestionManager() {
           </div>
           <div class="input-group">
             <label>Question Type</label>
-            <input class="input" id="qf-type" list="question-types-list" placeholder="e.g., Predict Output" value="${existing?.type || 'Predict Output'}" />
+            <div style="display:flex; gap:0.5rem;">
+              <select class="select" id="qf-type-select" style="flex:1;">
+                ${courseTypes.map(t => `<option value="${escapeHtml(t)}" ${existing?.type === t ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('')}
+                <option value="__custom__" ${existing?.type && !courseTypes.includes(existing.type) ? 'selected' : ''}>Custom...</option>
+              </select>
+              <input class="input" id="qf-type-custom" placeholder="New Type..." value="${existing?.type && !courseTypes.includes(existing.type) ? escapeHtml(existing.type) : ''}" style="display: ${existing?.type && !courseTypes.includes(existing.type) ? 'block' : 'none'}; flex:1;" />
+            </div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
@@ -473,6 +478,18 @@ export async function renderQuestionManager() {
           return false;
         }
       },
+    });
+
+    // Toggle custom type input
+    const typeSelect = modal.element.querySelector('#qf-type-select');
+    const typeCustom = modal.element.querySelector('#qf-type-custom');
+    typeSelect.addEventListener('change', () => {
+      if (typeSelect.value === '__custom__') {
+        typeCustom.style.display = 'block';
+        typeCustom.focus();
+      } else {
+        typeCustom.style.display = 'none';
+      }
     });
 
     // Add choice button
@@ -578,9 +595,15 @@ export async function renderQuestionManager() {
     const tagsInput = document.getElementById('qf-tags')?.value.trim() || '';
     const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : [];
 
+    let typeVal = document.getElementById('qf-type-select')?.value;
+    if (typeVal === '__custom__') {
+      typeVal = document.getElementById('qf-type-custom')?.value.trim();
+    }
+    typeVal = typeVal || 'Predict Output';
+
     return {
       title: document.getElementById('qf-title')?.value.trim() || null,
-      type: document.getElementById('qf-type')?.value.trim() || 'Predict Output',
+      type: typeVal,
       tags,
       text,
       codeSnippet,

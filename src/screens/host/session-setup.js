@@ -104,7 +104,7 @@ export async function renderSessionSetup() {
                     </div>
                     <div id="${bankId}" style="display:${isCollapsed ? 'none' : 'flex'};flex-direction:column;gap:0.5rem;padding-left:1.5rem;">
                       ${sortedTypes.map(type => `
-                        <div style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+                        <div style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-weight: 700; font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">
                           ${escapeHtml(type)}
                         </div>
                         ${typesMap[type].map(q => `
