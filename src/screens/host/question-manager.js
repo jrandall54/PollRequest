@@ -449,6 +449,15 @@ export async function renderQuestionManager() {
         if (!data) return false;
         
         try {
+          if (!courseTypes.includes(data.type)) {
+            courseTypes.push(data.type);
+            courseTypes.sort();
+            const courseId = hostStore.state.activeCourseId;
+            if (courseId && courseId !== 'default') {
+              await updateCourse(courseId, { questionTypes: courseTypes });
+            }
+          }
+
           if (isEdit) {
             await updateQuestion(existing.id, data);
             showToast('Question updated', 'success');

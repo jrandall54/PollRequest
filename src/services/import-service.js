@@ -45,6 +45,30 @@ export async function importFromFile(file, courseId = null) {
   // Batch import valid questions
   if (valid.length > 0) {
     await batchImportQuestions(valid, courseId);
+    
+    // Update managed course types if there are any new ones
+    if (courseId && courseId !== 'default') {
+      try {
+        const { getCourseById, updateCourse } = await import('./course-service.js');
+        const course = await getCourseById(courseId);
+        if (course) {
+          const courseTypes = course.questionTypes || ['Predict Output', 'Select All That Apply', 'True / False', 'Conceptual'];
+          let changed = false;
+          valid.forEach(q => {
+            if (q.type && !courseTypes.includes(q.type)) {
+              courseTypes.push(q.type);
+              changed = true;
+            }
+          });
+          if (changed) {
+            courseTypes.sort();
+            await updateCourse(courseId, { questionTypes: courseTypes });
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to update course types during import', e);
+      }
+    }
   }
 
   return {
