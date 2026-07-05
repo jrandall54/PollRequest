@@ -132,13 +132,17 @@ function createGlobalThemeSwitcher() {
   container.id = 'global-theme-switcher';
   container.style.cssText = `
     position: fixed;
-    bottom: 1.5rem;
-    left: 1.5rem;
+    bottom: 1rem;
+    right: 1rem;
     z-index: 99999;
     box-shadow: var(--shadow-lg);
     border-radius: var(--radius-md);
     background: var(--bg-secondary);
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
   `;
+  container.addEventListener('mouseenter', () => container.style.opacity = '1');
+  container.addEventListener('mouseleave', () => container.style.opacity = '0.3');
   document.body.appendChild(container);
   
   // Use existing component logic
