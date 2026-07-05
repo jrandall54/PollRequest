@@ -94,7 +94,7 @@ export async function renderHostGame(params) {
           <div class="question-text">${escapeHtml(question.text)}</div>
 
           ${question.codeSnippetMain ? `
-            <div class="dual-snippets">
+            <div class="dual-snippets dual-snippets--projector">
               <div>
                 <div class="text-sm text-muted" style="margin-bottom:0.25rem;">// Class Definition</div>
                 <div class="question-code-wrap" style="height:100%;">
