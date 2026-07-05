@@ -132,10 +132,16 @@ export function clearSavedIdentity() {
 /**
  * Get all student profiles (for analytics)
  */
-export async function getAllStudents() {
+export async function getAllStudents(courseId = null) {
   try {
     const snapshot = await getDocs(collection(db, COLLECTION));
-    return snapshot.docs.map(d => ({ uid: d.id, ...d.data() }));
+    let students = snapshot.docs.map(d => ({ uid: d.id, ...d.data() }));
+    
+    if (courseId) {
+      students = students.filter(s => s.courseStats && s.courseStats[courseId]);
+    }
+    
+    return students;
   } catch (error) {
     console.error('Error fetching students:', error);
     return [];

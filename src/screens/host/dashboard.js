@@ -26,7 +26,7 @@ export async function renderDashboard() {
     const [questions, sessions, students] = await Promise.all([
       getAllQuestions(courseId),
       getAllSessions(courseId),
-      getAllStudents(), // Analytics tracks total students, we can filter later if needed
+      getAllStudents(courseId),
     ]);
     questionCount = questions.length;
     sessionCount = sessions.filter(s => s.status === 'ended').length;

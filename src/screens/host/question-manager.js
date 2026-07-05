@@ -409,7 +409,7 @@ export async function renderQuestionManager() {
       danger: true,
       onConfirm: async () => {
         try {
-          await deleteAllQuestions();
+          await deleteAllQuestions(hostStore.state.activeCourseId);
           questions = [];
           showToast('Question bank cleared', 'success');
           renderPage();
@@ -455,12 +455,13 @@ export async function renderQuestionManager() {
 
   async function doImport(file, clearFirst) {
     try {
+      const activeCourseId = hostStore.state.activeCourseId;
       if (clearFirst) {
-        await deleteAllQuestions();
+        await deleteAllQuestions(activeCourseId);
       }
-      const result = await importFromFile(file);
+      const result = await importFromFile(file, activeCourseId);
       showToast(`Imported ${result.imported} question${result.imported !== 1 ? 's' : ''}${result.skipped ? `, ${result.skipped} skipped` : ''}`, 'success');
-      questions = await getAllQuestions(hostStore.state.activeCourseId);
+      questions = await getAllQuestions(activeCourseId);
       renderPage();
     } catch (e) {
       showToast('Import error: ' + e.message, 'error');

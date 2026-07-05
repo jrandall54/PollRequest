@@ -158,9 +158,9 @@ export async function deleteQuestion(questionId) {
 /**
  * Delete all questions (used for clearing the bank)
  */
-export async function deleteAllQuestions() {
+export async function deleteAllQuestions(courseId = null) {
   try {
-    const questions = await getAllQuestions();
+    const questions = await getAllQuestions(courseId);
     if (!questions.length) return 0;
     
     // Firestore batches have a limit of 500 operations
