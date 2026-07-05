@@ -20,12 +20,17 @@ export async function getAllQuestions(courseId = null) {
   try {
     let q;
     if (courseId) {
-      q = query(collection(db, COLLECTION), where('courseId', '==', courseId), orderBy('createdAt', 'desc'));
+      q = query(collection(db, COLLECTION), where('courseId', '==', courseId));
     } else {
-      q = query(collection(db, COLLECTION), orderBy('createdAt', 'desc'));
+      q = query(collection(db, COLLECTION));
     }
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    const questions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    return questions.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
   } catch (error) {
     console.error('Error fetching questions:', error);
     return [];
