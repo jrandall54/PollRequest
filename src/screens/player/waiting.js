@@ -61,20 +61,26 @@ export async function renderWaiting(params) {
       <div class="waiting-screen__icon">
         ${getIconSvg(identity.icon, 80)}
       </div>
-      <div class="waiting-screen__name" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+      <div class="waiting-screen__name">
         ${escapeHtml(identity.name)}
-        <button id="btn-edit-profile" style="background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:0.25rem;" title="Edit Profile">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-        </button>
-        <button id="btn-view-stats" style="background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:0.25rem;" title="View Stats">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
-        </button>
       </div>
       <div class="waiting-screen__message">
         You're in! Waiting for the host to start
         <span class="waiting-dots"><span></span><span></span><span></span></span>
       </div>
-      <div class="text-muted text-sm" style="margin-top:2rem;" id="player-count-msg">
+
+      <div class="waiting-screen__actions" style="display:flex; gap:1rem; margin-top:2.5rem; justify-content:center; width: 100%; max-width: 400px; margin-inline: auto; animation: slideUp 0.5s ease-out 0.2s both;">
+        <button class="btn btn--secondary" id="btn-edit-profile" style="flex:1; display:flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow: var(--shadow-sm); padding: 0.75rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Edit Profile
+        </button>
+        <button class="btn btn--secondary" id="btn-view-stats" style="flex:1; display:flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow: var(--shadow-sm); padding: 0.75rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+          View Stats
+        </button>
+      </div>
+
+      <div class="text-muted text-sm" style="margin-top:2rem; animation: slideUp 0.5s ease-out 0.4s both;" id="player-count-msg">
         Looking for session...
       </div>
     </div>
