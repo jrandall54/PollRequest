@@ -106,7 +106,7 @@ export async function createQuestion(questionData, courseId = null) {
       courseId: courseId || 'General',
       bank: questionData.bank || 'Custom Questions',
       title: questionData.title || null,
-      type: questionData.type || 'Multiple Choice',
+      type: questionData.type || 'Predict Output',
       tags: Array.isArray(questionData.tags) ? questionData.tags : [],
       text: questionData.text || '',
       codeSnippet: questionData.codeSnippet || null,
@@ -223,7 +223,7 @@ export async function batchImportQuestions(questions, courseId = null) {
         courseId: q.courseId || courseId || 'General',
         bank: q.bank || 'Imported Questions',
         title: q.title || null,
-        type: q.type || 'Multiple Choice',
+        type: q.type || 'Predict Output',
         tags: Array.isArray(q.tags) ? q.tags : [],
         text: q.text || '',
         codeSnippet: q.codeSnippet || null,
@@ -255,7 +255,7 @@ export async function exportQuestionsAsJson(courseId = null) {
   const questions = await getAllQuestions(courseId);
   return questions.map(q => ({
     title: q.title || null,
-    type: q.type || 'Multiple Choice',
+    type: q.type || 'Predict Output',
     tags: Array.isArray(q.tags) ? q.tags : [],
     text: q.text,
     codeSnippet: q.codeSnippet,

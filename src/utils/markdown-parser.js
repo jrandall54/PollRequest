@@ -37,7 +37,7 @@ function parseSingleQuestion(section) {
   const lines = section.split('\n');
   const question = {
     title: null,
-    type: 'Multiple Choice',
+    type: 'Predict Output',
     tags: [],
     text: '',
     codeSnippet: null,
