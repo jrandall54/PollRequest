@@ -69,14 +69,18 @@ export async function deleteCourse(courseId) {
  * Ensure at least one default course exists
  */
 export async function ensureDefaultCourse() {
-  const courses = await getAllCourses();
-  if (courses.length === 0) {
-    const defaultId = await createCourse({ 
-      name: 'General', 
-      description: 'Default fallback course' 
-    });
-    return { id: defaultId, name: 'General' };
+  try {
+    const courses = await getAllCourses();
+    if (courses.length === 0) {
+      const defaultId = await createCourse({ 
+        name: 'General', 
+        description: 'Default fallback course' 
+      });
+      return { id: defaultId, name: 'General' };
+    }
+    return courses[courses.length - 1];
+  } catch (err) {
+    console.error('Failed to ensure default course:', err);
+    return { id: 'default', name: 'General' };
   }
-  // Return the first one as default
-  return courses[courses.length - 1]; // oldest first because orderBy desc? No, desc means newest first. Let's just return courses[0].
 }

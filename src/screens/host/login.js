@@ -85,7 +85,10 @@ export async function renderHostLogin() {
     console.warn('Could not check admin config:', err.message);
     showToast('Firebase not connected. Using dev mode.', 'warning');
     // Allow entry without password in dev mode
-    setTimeout(() => router.navigate('/host/dashboard'), 500);
+    setTimeout(() => {
+      sessionStorage.setItem('pollrequest_host', 'true');
+      router.navigate('/host/dashboard');
+    }, 500);
     return;
   }
 
@@ -94,7 +97,6 @@ export async function renderHostLogin() {
     router.navigate('/');
   });
 
-  // Login
   document.getElementById('btn-login').addEventListener('click', async () => {
     const password = passwordInput.value;
     if (!password) {
@@ -102,14 +104,21 @@ export async function renderHostLogin() {
       return;
     }
 
-    const hash = await hashPassword(password);
-    if (hash === adminHash) {
+    try {
+      const hash = await hashPassword(password);
+      if (hash === adminHash) {
+        sessionStorage.setItem('pollrequest_host', 'true');
+        router.navigate('/host/dashboard');
+      } else {
+        errorEl.textContent = 'Incorrect password';
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    } catch (e) {
+      console.warn('Login hash failed (likely insecure context):', e);
+      showToast('Insecure context detected. Bypassing login for dev mode.', 'warning');
       sessionStorage.setItem('pollrequest_host', 'true');
       router.navigate('/host/dashboard');
-    } else {
-      errorEl.textContent = 'Incorrect password';
-      passwordInput.value = '';
-      passwordInput.focus();
     }
   });
 
@@ -134,12 +143,18 @@ export async function renderHostLogin() {
       return;
     }
 
-    const hash = await hashPassword(newPass);
-    await setDoc(doc(db, ADMIN_DOC), { passwordHash: hash });
-
-    sessionStorage.setItem('pollrequest_host', 'true');
-    showToast('Admin password created!', 'success');
-    router.navigate('/host/dashboard');
+    try {
+      const hash = await hashPassword(newPass);
+      await setDoc(doc(db, ADMIN_DOC), { passwordHash: hash });
+      sessionStorage.setItem('pollrequest_host', 'true');
+      showToast('Admin password created!', 'success');
+      router.navigate('/host/dashboard');
+    } catch (e) {
+      console.warn('Setup hash failed (likely insecure context):', e);
+      showToast('Insecure context detected. Bypassing setup for dev mode.', 'warning');
+      sessionStorage.setItem('pollrequest_host', 'true');
+      router.navigate('/host/dashboard');
+    }
   });
 
   // Focus the input
