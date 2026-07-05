@@ -5,7 +5,7 @@
 
 import router from '../../router.js';
 import { getUiIcon } from '../../utils/constants.js';
-import { getAllQuestions, createQuestion, updateQuestion, deleteQuestion } from '../../services/question-service.js';
+import { getAllQuestions, createQuestion, updateQuestion, deleteQuestion, deleteAllQuestions } from '../../services/question-service.js';
 import { importFromFile } from '../../services/import-service.js';
 import { showModal } from '../../components/modal.js';
 import { showToast } from '../../utils/helpers.js';
@@ -14,6 +14,8 @@ import { DIFFICULTIES, DEFAULT_TIME_LIMIT } from '../../utils/constants.js';
 export async function renderQuestionManager() {
   const app = document.getElementById('app');
   let questions = [];
+  let sortCol = 'createdAt';
+  let sortAsc = false;
 
   try {
     questions = await getAllQuestions();
@@ -23,7 +25,29 @@ export async function renderQuestionManager() {
 
   renderPage();
 
+  function sortQuestions() {
+    questions.sort((a, b) => {
+      let valA = a[sortCol];
+      let valB = b[sortCol];
+      
+      if (sortCol === 'choices') {
+        valA = a.choices?.length || 0;
+        valB = b.choices?.length || 0;
+      }
+      if (sortCol === 'text') {
+        valA = (valA || '').toLowerCase();
+        valB = (valB || '').toLowerCase();
+      }
+      
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+  }
+
   function renderPage() {
+    sortQuestions();
+
     app.innerHTML = `
       <div class="host-layout screen">
         <header class="host-header">
@@ -32,6 +56,9 @@ export async function renderQuestionManager() {
           </button>
           <h3>Question Manager</h3>
           <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn--danger btn--sm" id="btn-clear-bank">
+              ${getUiIcon('trash', 16)} Clear Bank
+            </button>
             <button class="btn btn--secondary btn--sm" id="btn-import">
               ${getUiIcon('upload', 16)} Import
             </button>
@@ -57,11 +84,11 @@ export async function renderQuestionManager() {
                 <table class="table">
                   <thead>
                     <tr>
-                      <th style="width:50%;">Question</th>
-                      <th>Category</th>
-                      <th>Difficulty</th>
-                      <th>Time</th>
-                      <th>Choices</th>
+                      <th class="sortable" data-sort="text" style="width:50%;cursor:pointer;">Question ${sortCol === 'text' ? (sortAsc ? '↑' : '↓') : ''}</th>
+                      <th class="sortable" data-sort="category" style="cursor:pointer;">Category ${sortCol === 'category' ? (sortAsc ? '↑' : '↓') : ''}</th>
+                      <th class="sortable" data-sort="difficulty" style="cursor:pointer;">Difficulty ${sortCol === 'difficulty' ? (sortAsc ? '↑' : '↓') : ''}</th>
+                      <th class="sortable" data-sort="timeLimit" style="cursor:pointer;">Time ${sortCol === 'timeLimit' ? (sortAsc ? '↑' : '↓') : ''}</th>
+                      <th class="sortable" data-sort="choices" style="cursor:pointer;">Choices ${sortCol === 'choices' ? (sortAsc ? '↑' : '↓') : ''}</th>
                       <th style="width:80px;">Actions</th>
                     </tr>
                   </thead>
@@ -98,9 +125,23 @@ export async function renderQuestionManager() {
     `;
 
     // Event listeners
-    document.getElementById('btn-back').addEventListener('click', () => router.navigate('/host/dashboard'));
-    document.getElementById('btn-add').addEventListener('click', () => showQuestionForm());
-    document.getElementById('btn-import').addEventListener('click', () => handleImport());
+    document.getElementById('btn-back')?.addEventListener('click', () => router.navigate('/host/dashboard'));
+    document.getElementById('btn-add')?.addEventListener('click', () => showQuestionForm());
+    document.getElementById('btn-import')?.addEventListener('click', () => handleImport());
+    document.getElementById('btn-clear-bank')?.addEventListener('click', () => handleClearBank());
+
+    document.querySelectorAll('.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.sort;
+        if (sortCol === col) {
+          sortAsc = !sortAsc;
+        } else {
+          sortCol = col;
+          sortAsc = true;
+        }
+        renderPage();
+      });
+    });
 
     document.querySelectorAll('.btn-edit').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -116,6 +157,7 @@ export async function renderQuestionManager() {
 
   function showQuestionForm(existing = null) {
     const isEdit = !!existing;
+    const hasMain = !!existing?.codeSnippetMain;
     const formContent = document.createElement('div');
     formContent.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:1rem;">
@@ -135,11 +177,31 @@ export async function renderQuestionManager() {
             </select>
           </div>
         </div>
-        <div class="input-group">
-          <label>Code Snippet (optional)</label>
-          <textarea class="textarea" id="qf-code" rows="4" placeholder="System.out.println(&quot;Hello&quot;);" style="font-family:'JetBrains Mono',monospace;">${existing?.codeSnippet || ''}</textarea>
+
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;">
+          <input type="checkbox" id="qf-split-code" ${hasMain ? 'checked' : ''} style="width:1rem;height:1rem;" />
+          <label for="qf-split-code" style="font-weight:600;">Split into Class & Main snippets</label>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
+        <div id="qf-code-section" class="${hasMain ? 'dual-snippets' : ''}" style="margin: 0;">
+          <div class="input-group" style="margin: 0; width: 100%;">
+            <label id="lbl-qf-code">${hasMain ? 'Class Definition (optional)' : 'Code Snippet (optional)'}</label>
+            <div class="live-editor-container">
+              <textarea class="live-editor-textarea" id="qf-code" spellcheck="false" placeholder="class MyClass { ... }">${existing?.codeSnippet || ''}</textarea>
+              <pre class="live-editor-pre" aria-hidden="true"><code class="language-java" id="qf-code-highlight"></code></pre>
+            </div>
+          </div>
+          
+          <div class="input-group" id="qf-code-main-container" style="margin: 0; width: 100%; display: ${hasMain ? 'flex' : 'none'};">
+            <label>Main Method (optional)</label>
+            <div class="live-editor-container">
+              <textarea class="live-editor-textarea" id="qf-code-main" spellcheck="false" placeholder="public static void main(String[] args) { ... }">${existing?.codeSnippetMain || ''}</textarea>
+              <pre class="live-editor-pre" aria-hidden="true"><code class="language-java" id="qf-code-main-highlight"></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem;">
           <div class="input-group">
             <label>Code Language</label>
             <input class="input" id="qf-lang" placeholder="java" value="${existing?.codeLanguage || 'java'}" />
@@ -173,7 +235,8 @@ export async function renderQuestionManager() {
       size: 'large',
       onConfirm: async () => {
         const data = getFormData();
-        if (!data) return;
+        if (!data) return false;
+        
         try {
           if (isEdit) {
             await updateQuestion(existing.id, data);
@@ -184,8 +247,10 @@ export async function renderQuestionManager() {
           }
           questions = await getAllQuestions();
           renderPage();
+          return true;
         } catch (e) {
           showToast('Error: ' + e.message, 'error');
+          return false;
         }
       },
     });
@@ -200,6 +265,52 @@ export async function renderQuestionManager() {
       }
       container.insertAdjacentHTML('beforeend', choiceRow(count, '', false));
     });
+
+    // Toggle split code snippets
+    const splitToggle = modal.element.querySelector('#qf-split-code');
+    const codeSection = modal.element.querySelector('#qf-code-section');
+    const codeMainContainer = modal.element.querySelector('#qf-code-main-container');
+    const lblCode = modal.element.querySelector('#lbl-qf-code');
+    
+    splitToggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        codeSection.classList.add('dual-snippets');
+        codeMainContainer.style.display = 'flex';
+        lblCode.textContent = 'Class Definition (optional)';
+      } else {
+        codeSection.classList.remove('dual-snippets');
+        codeMainContainer.style.display = 'none';
+        lblCode.textContent = 'Code Snippet (optional)';
+      }
+    });
+
+    // Sync live editors
+    function setupLiveEditor(textareaId, highlightId) {
+      const textarea = modal.element.querySelector('#' + textareaId);
+      const highlight = modal.element.querySelector('#' + highlightId);
+      const pre = highlight.parentElement;
+
+      function sync() {
+        let text = textarea.value;
+        if (text[text.length - 1] === '\n') {
+          text += ' ';
+        }
+        highlight.textContent = text;
+        if (window.Prism) {
+          window.Prism.highlightElement(highlight);
+        }
+      }
+
+      textarea.addEventListener('input', sync);
+      textarea.addEventListener('scroll', () => {
+        pre.scrollTop = textarea.scrollTop;
+        pre.scrollLeft = textarea.scrollLeft;
+      });
+      sync();
+    }
+
+    setupLiveEditor('qf-code', 'qf-code-highlight');
+    setupLiveEditor('qf-code-main', 'qf-code-main-highlight');
   }
 
   function choiceRow(index, text, isCorrect) {
@@ -238,12 +349,16 @@ export async function renderQuestionManager() {
       return null;
     }
 
-    const codeSnippet = document.getElementById('qf-code')?.value.trim() || null;
+    const codeSnippet = document.getElementById('qf-code')?.value || null;
+    const isSplit = document.getElementById('qf-split-code')?.checked;
+    const codeSnippetMain = isSplit ? (document.getElementById('qf-code-main')?.value || null) : null;
+    
     const multiSelect = choices.filter(c => c.isCorrect).length > 1;
 
     return {
       text,
       codeSnippet,
+      codeSnippetMain,
       codeLanguage: document.getElementById('qf-lang')?.value.trim() || null,
       choices,
       multiSelect,
@@ -266,8 +381,35 @@ export async function renderQuestionManager() {
           questions = questions.filter(q => q.id !== id);
           showToast('Question deleted', 'success');
           renderPage();
+          return true;
         } catch (e) {
           showToast('Error: ' + e.message, 'error');
+          return false;
+        }
+      },
+    });
+  }
+
+  function handleClearBank() {
+    if (questions.length === 0) {
+      showToast('Question bank is already empty', 'info');
+      return;
+    }
+    showModal({
+      title: 'Clear Question Bank',
+      content: '<p>Are you sure you want to delete ALL questions in the bank? This action is permanent and cannot be undone.</p>',
+      confirmText: 'Clear Bank',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await deleteAllQuestions();
+          questions = [];
+          showToast('Question bank cleared', 'success');
+          renderPage();
+          return true;
+        } catch (e) {
+          showToast('Error: ' + e.message, 'error');
+          return false;
         }
       },
     });
@@ -281,16 +423,41 @@ export async function renderQuestionManager() {
       const file = input.files[0];
       if (!file) return;
 
-      try {
-        const result = await importFromFile(file);
-        showToast(`Imported ${result.imported} question${result.imported !== 1 ? 's' : ''}${result.skipped ? `, ${result.skipped} skipped` : ''}`, 'success');
-        questions = await getAllQuestions();
-        renderPage();
-      } catch (e) {
-        showToast('Import error: ' + e.message, 'error');
+      if (questions.length > 0) {
+        showModal({
+          title: 'Import Questions',
+          content: '<p>You already have questions in the bank. Do you want to clear the existing questions before importing, or append the new questions?</p>',
+          confirmText: 'Clear & Import',
+          cancelText: 'Append',
+          danger: true,
+          onConfirm: async () => {
+            await doImport(file, true);
+            return true;
+          },
+          onCancel: async () => {
+            await doImport(file, false);
+            return true;
+          }
+        });
+      } else {
+        await doImport(file, false);
       }
     });
     input.click();
+  }
+
+  async function doImport(file, clearFirst) {
+    try {
+      if (clearFirst) {
+        await deleteAllQuestions();
+      }
+      const result = await importFromFile(file);
+      showToast(`Imported ${result.imported} question${result.imported !== 1 ? 's' : ''}${result.skipped ? `, ${result.skipped} skipped` : ''}`, 'success');
+      questions = await getAllQuestions();
+      renderPage();
+    } catch (e) {
+      showToast('Import error: ' + e.message, 'error');
+    }
   }
 }
 

@@ -103,7 +103,22 @@ export async function renderPlayerGame(params) {
         </div>
 
         <div class="answer-screen__question">${escapeHtml(question.text)}</div>
-        ${question.codeSnippet ? `
+        ${question.codeSnippetMain ? `
+          <div class="dual-snippets" style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+            <div>
+              <div class="text-sm text-muted" style="margin-bottom:0.25rem;">// Class Definition</div>
+              <div class="question-code-wrap" style="height:100%;">
+                ${renderCodeBlock(question.codeSnippet, question.codeLanguage)}
+              </div>
+            </div>
+            <div>
+              <div class="text-sm text-muted" style="margin-bottom:0.25rem;">// Main Method</div>
+              <div class="question-code-wrap" style="height:100%;">
+                ${renderCodeBlock(question.codeSnippetMain, question.codeLanguage)}
+              </div>
+            </div>
+          </div>
+        ` : question.codeSnippet ? `
           <div class="question-code-wrap" style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 1rem;">
             ${renderCodeBlock(question.codeSnippet, question.codeLanguage)}
           </div>

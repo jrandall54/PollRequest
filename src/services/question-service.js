@@ -100,6 +100,7 @@ export async function createQuestion(questionData) {
     const data = {
       text: questionData.text || '',
       codeSnippet: questionData.codeSnippet || null,
+      codeSnippetMain: questionData.codeSnippetMain || null,
       codeLanguage: questionData.codeLanguage || null,
       choices: questionData.choices || [],
       multiSelect: questionData.multiSelect || false,
@@ -149,6 +150,35 @@ export async function deleteQuestion(questionId) {
 }
 
 /**
+ * Delete all questions (used for clearing the bank)
+ */
+export async function deleteAllQuestions() {
+  try {
+    const questions = await getAllQuestions();
+    if (!questions.length) return 0;
+    
+    // Firestore batches have a limit of 500 operations
+    const chunks = [];
+    for (let i = 0; i < questions.length; i += 500) {
+      chunks.push(questions.slice(i, i + 500));
+    }
+    
+    for (const chunk of chunks) {
+      const batch = writeBatch(db);
+      chunk.forEach(q => {
+        batch.delete(doc(db, COLLECTION, q.id));
+      });
+      await batch.commit();
+    }
+    
+    return questions.length;
+  } catch (error) {
+    console.error('Error deleting all questions:', error);
+    throw error;
+  }
+}
+
+/**
  * Batch import questions (from parsed Markdown/JSON)
  */
 export async function batchImportQuestions(questions) {
@@ -161,6 +191,7 @@ export async function batchImportQuestions(questions) {
       batch.set(ref, {
         text: q.text || '',
         codeSnippet: q.codeSnippet || null,
+        codeSnippetMain: q.codeSnippetMain || null,
         codeLanguage: q.codeLanguage || null,
         choices: q.choices || [],
         multiSelect: q.multiSelect || false,
@@ -190,6 +221,7 @@ export async function exportQuestionsAsJson() {
   return questions.map(q => ({
     text: q.text,
     codeSnippet: q.codeSnippet,
+    codeSnippetMain: q.codeSnippetMain,
     codeLanguage: q.codeLanguage,
     choices: q.choices,
     multiSelect: q.multiSelect,

@@ -64,9 +64,15 @@ export function showModal(options = {}) {
   }
 
   // Event handlers
-  overlay.querySelector('#modal-confirm-btn')?.addEventListener('click', () => {
-    onConfirm();
-    close();
+  overlay.querySelector('#modal-confirm-btn')?.addEventListener('click', async () => {
+    try {
+      const shouldClose = await onConfirm();
+      if (shouldClose !== false) {
+        close();
+      }
+    } catch (e) {
+      console.error('Modal onConfirm error:', e);
+    }
   });
 
   overlay.querySelector('#modal-cancel-btn')?.addEventListener('click', () => {

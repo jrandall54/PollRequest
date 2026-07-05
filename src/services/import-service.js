@@ -63,6 +63,7 @@ function parseJsonQuestions(content) {
     return questions.map(q => ({
       text: q.text || '',
       codeSnippet: q.codeSnippet || null,
+      codeSnippetMain: q.codeSnippetMain || null,
       codeLanguage: q.codeLanguage || null,
       choices: (q.choices || []).map(c => ({
         text: c.text || '',

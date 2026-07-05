@@ -93,7 +93,22 @@ export async function renderHostGame(params) {
         <div class="question-screen__body">
           <div class="question-text">${escapeHtml(question.text)}</div>
 
-          ${question.codeSnippet ? `
+          ${question.codeSnippetMain ? `
+            <div class="dual-snippets">
+              <div>
+                <div class="text-sm text-muted" style="margin-bottom:0.25rem;">// Class Definition</div>
+                <div class="question-code-wrap" style="height:100%;">
+                  ${renderCodeBlock(question.codeSnippet, question.codeLanguage)}
+                </div>
+              </div>
+              <div>
+                <div class="text-sm text-muted" style="margin-bottom:0.25rem;">// Main Method</div>
+                <div class="question-code-wrap" style="height:100%;">
+                  ${renderCodeBlock(question.codeSnippetMain, question.codeLanguage)}
+                </div>
+              </div>
+            </div>
+          ` : question.codeSnippet ? `
             <div class="question-code-wrap">
               ${renderCodeBlock(question.codeSnippet, question.codeLanguage)}
             </div>
