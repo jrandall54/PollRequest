@@ -41,6 +41,14 @@ export async function renderWaiting(params) {
         identity.uid = uid;
         // Join session first to validate name uniqueness
         await joinSession(sessionId, { uid, name: identity.name, icon: identity.icon });
+
+        // Restore userStore state
+        userStore.update({
+          uid,
+          name: identity.name,
+          icon: identity.icon,
+          isAuthenticated: true,
+        });
       } catch (e) {
         console.warn('Could not rejoin session:', e);
         if (e.message === 'name_taken') {

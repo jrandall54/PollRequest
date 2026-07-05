@@ -146,6 +146,19 @@ export async function renderProfileSetup(params) {
       // Join the session FIRST to validate name uniqueness
       await joinSession(sessionId, { uid, name, icon: selectedIcon });
 
+      // Update local state so waiting room knows who we are
+      userStore.update({
+        uid,
+        name,
+        icon: selectedIcon,
+        isAuthenticated: true,
+      });
+
+      // Save to localStorage for quick return/reloads
+      localStorage.setItem('pollrequest_uid', uid);
+      localStorage.setItem('pollrequest_name', name);
+      localStorage.setItem('pollrequest_icon', selectedIcon);
+
       router.navigate(`/player/waiting/${sessionId}`);
     } catch (e) {
       if (e.message === 'name_taken') {
