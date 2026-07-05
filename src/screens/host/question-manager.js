@@ -6,6 +6,7 @@
 import router from '../../router.js';
 import { getUiIcon } from '../../utils/constants.js';
 import { getAllQuestions, createQuestion, updateQuestion, deleteQuestion, deleteAllQuestions, deleteBank, getBanks } from '../../services/question-service.js';
+import { getCourseById, updateCourse } from '../../services/course-service.js';
 import { importFromFile } from '../../services/import-service.js';
 import { showModal } from '../../components/modal.js';
 import { showToast } from '../../utils/helpers.js';
@@ -16,6 +17,7 @@ import { hostStore } from '../../state.js';
 export async function renderQuestionManager() {
   const app = document.getElementById('app');
   let questions = [];
+  let courseTypes = ['Predict Output', 'Select All That Apply', 'True / False', 'Conceptual'];
   let sortCol = 'createdAt';
   let sortAsc = false;
   let collapsedBanks = new Set();
@@ -25,6 +27,15 @@ export async function renderQuestionManager() {
     headerHtml = await renderHostHeader();
     const courseId = hostStore.state.activeCourseId;
     questions = await getAllQuestions(courseId);
+    if (courseId !== 'default' && courseId) {
+      const course = await getCourseById(courseId);
+      if (course && course.questionTypes) {
+        courseTypes = course.questionTypes;
+      } else if (course) {
+        // Initialize if not present
+        await updateCourse(courseId, { questionTypes: courseTypes });
+      }
+    }
   } catch (e) {
     console.warn('Could not load questions:', e);
   }
@@ -75,6 +86,9 @@ export async function renderQuestionManager() {
             <button class="btn btn--danger btn--sm" id="btn-clear-bank">
               ${getUiIcon('trash', 16)} Clear Bank
             </button>
+            <button class="btn btn--secondary btn--sm" id="btn-manage-types">
+              ${getUiIcon('settings', 16)} Manage Types
+            </button>
             <button class="btn btn--secondary btn--sm" id="btn-import">
               ${getUiIcon('upload', 16)} Import
             </button>
@@ -100,13 +114,24 @@ export async function renderQuestionManager() {
                 </button>
               </div>
 
-              ${banks.map(bank => {
+              ${banks.map((bank, bankIndex) => {
                 const isCollapsed = collapsedBanks.has(bank);
+                const bankId = `bank-${bankIndex}`;
+                
+                // Group by type
+                const typesMap = {};
+                banksMap[bank].forEach(q => {
+                  const t = q.type || 'Uncategorized';
+                  if (!typesMap[t]) typesMap[t] = [];
+                  typesMap[t].push(q);
+                });
+                const sortedTypes = Object.keys(typesMap).sort();
+
                 return `
                 <div class="card" style="margin-top: 2rem; padding: 0; overflow: hidden; border: 1px solid var(--border-color);">
-                  <div class="bank-header" data-bank="${escapeHtml(bank)}" style="padding: 1rem 1.5rem; background: var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; border-bottom: ${isCollapsed ? 'none' : '1px solid var(--border-color)'}; cursor: pointer; user-select: none;">
+                  <div class="bank-header" data-bank="${escapeHtml(bank)}" data-target="${bankId}" style="padding: 1rem 1.5rem; background: var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; border-bottom: ${isCollapsed ? 'none' : '1px solid var(--border-color)'}; cursor: pointer; user-select: none;">
                     <div style="display:flex; align-items:center; gap:1rem;">
-                      <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; transition:transform 0.2s; transform:${isCollapsed ? 'rotate(-90deg)' : 'rotate(0)'}; color:var(--text-secondary);">
+                      <span class="bank-chevron" style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; transition:transform 0.2s; transform:${isCollapsed ? 'rotate(-90deg)' : 'rotate(0)'}; color:var(--text-secondary);">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                       </span>
                       <input type="checkbox" class="bank-select-all custom-checkbox" data-bank="${escapeHtml(bank)}" title="Select all in ${escapeHtml(bank)}" onclick="event.stopPropagation()" />
@@ -117,48 +142,51 @@ export async function renderQuestionManager() {
                       ${getUiIcon('trash', 16)}
                     </button>
                   </div>
-                  <div class="table-wrap" style="display: ${isCollapsed ? 'none' : 'block'}; padding: 0.5rem 1rem 1rem 1rem;">
+                  <div class="table-wrap" id="${bankId}" style="display: ${isCollapsed ? 'none' : 'block'}; padding: 0.5rem 1rem 1rem 1rem;">
                     <table class="table" style="margin:0;">
                       <thead>
                         <tr>
                           <th style="width: 48px; padding-left: 0.5rem;"></th>
-                          <th class="sortable" data-sort="text" style="width:40%;cursor:pointer;">Question ${sortCol === 'text' ? (sortAsc ? '↑' : '↓') : ''}</th>
-                          <th class="sortable" data-sort="type" style="cursor:pointer;">Type ${sortCol === 'type' ? (sortAsc ? '↑' : '↓') : ''}</th>
+                          <th class="sortable" data-sort="text" style="width:50%;cursor:pointer;">Question ${sortCol === 'text' ? (sortAsc ? '↑' : '↓') : ''}</th>
                           <th class="sortable" data-sort="difficulty" style="cursor:pointer;">Difficulty ${sortCol === 'difficulty' ? (sortAsc ? '↑' : '↓') : ''}</th>
                           <th class="sortable" data-sort="timeLimit" style="cursor:pointer;">Time ${sortCol === 'timeLimit' ? (sortAsc ? '↑' : '↓') : ''}</th>
                           <th style="width:80px; text-align:right; padding-right:1rem;">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        ${banksMap[bank].map(q => `
-                          <tr data-id="${q.id}">
-                            <td style="padding-left: 0.5rem;">
-                              <input type="checkbox" class="q-select-cb custom-checkbox" data-id="${q.id}" data-bank="${escapeHtml(bank)}" />
-                            </td>
-                            <td>
-                              ${q.title ? `<div style="font-weight:700;font-size:1rem;color:var(--text-primary);margin-bottom:0.25rem;">${escapeHtml(q.title)}</div>` : ''}
-                              <div style="font-weight:${q.title ? '400' : '500'};font-size:0.95rem;color:var(--text-primary);">${escapeHtml(q.text.length > 60 ? q.text.substring(0, 60) + '...' : q.text)}</div>
-                              <div style="display:flex;gap:0.35rem;margin-top:0.5rem;flex-wrap:wrap;">
-                                ${(q.tags || []).map(t => `<span class="badge badge--neutral" style="font-size:0.7rem;">${escapeHtml(t)}</span>`).join('')}
-                                ${q.codeSnippet ? '<span class="badge badge--neutral" style="font-size:0.7rem;">&lt;/&gt; Code</span>' : ''}
-                              </div>
-                            </td>
-                            <td>
-                              ${q.type ? `<span class="badge badge--primary" style="font-size:0.75rem;">${escapeHtml(q.type)}</span>` : '<span class="text-muted">—</span>'}
-                            </td>
-                            <td><span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span></td>
-                            <td>${q.timeLimit || 30}s</td>
-                            <td style="text-align:right; padding-right:1rem;">
-                              <div style="display:flex;gap:0.25rem;justify-content:flex-end;">
-                                <button class="btn btn--ghost btn--icon btn-edit" data-id="${q.id}" title="Edit">
-                                  ${getUiIcon('edit', 16)}
-                                </button>
-                                <button class="btn btn--ghost btn--icon btn-delete" data-id="${q.id}" title="Delete" style="color:var(--error);">
-                                  ${getUiIcon('trash', 16)}
-                                </button>
-                              </div>
+                        ${sortedTypes.map(type => `
+                          <tr>
+                            <td colspan="5" style="background: var(--bg-tertiary); padding: 0.5rem 1rem; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                              <strong style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">${escapeHtml(type)}</strong>
                             </td>
                           </tr>
+                          ${typesMap[type].map(q => `
+                            <tr data-id="${q.id}">
+                              <td style="padding-left: 0.5rem;">
+                                <input type="checkbox" class="q-select-cb custom-checkbox" data-id="${q.id}" data-bank="${escapeHtml(bank)}" />
+                              </td>
+                              <td>
+                                ${q.title ? `<div style="font-weight:700;font-size:1rem;color:var(--text-primary);margin-bottom:0.25rem;">${escapeHtml(q.title)}</div>` : ''}
+                                <div style="font-weight:${q.title ? '400' : '500'};font-size:0.95rem;color:var(--text-primary);">${escapeHtml(q.text.length > 70 ? q.text.substring(0, 70) + '...' : q.text)}</div>
+                                <div style="display:flex;gap:0.35rem;margin-top:0.5rem;flex-wrap:wrap;">
+                                  ${(q.tags || []).map(t => `<span class="badge badge--neutral" style="font-size:0.7rem;">${escapeHtml(t)}</span>`).join('')}
+                                  ${q.codeSnippet ? '<span class="badge badge--neutral" style="font-size:0.7rem;">&lt;/&gt; Code</span>' : ''}
+                                </div>
+                              </td>
+                              <td><span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span></td>
+                              <td>${q.timeLimit || 30}s</td>
+                              <td style="text-align:right; padding-right:1rem;">
+                                <div style="display:flex;gap:0.25rem;justify-content:flex-end;">
+                                  <button class="btn btn--ghost btn--icon btn-edit" data-id="${q.id}" title="Edit">
+                                    ${getUiIcon('edit', 16)}
+                                  </button>
+                                  <button class="btn btn--ghost btn--icon btn-delete" data-id="${q.id}" title="Delete" style="color:var(--error);">
+                                    ${getUiIcon('trash', 16)}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          `).join('')}
                         `).join('')}
                       </tbody>
                     </table>
@@ -175,6 +203,7 @@ export async function renderQuestionManager() {
     // Event listeners
     document.getElementById('btn-back')?.addEventListener('click', () => router.navigate('/host/dashboard'));
     document.getElementById('btn-add')?.addEventListener('click', () => showQuestionForm());
+    document.getElementById('btn-manage-types')?.addEventListener('click', () => showManageTypesModal());
     document.getElementById('btn-import')?.addEventListener('click', () => handleImport());
     document.getElementById('btn-clear-bank')?.addEventListener('click', () => handleClearBank());
 
@@ -276,12 +305,21 @@ export async function renderQuestionManager() {
     document.querySelectorAll('.bank-header').forEach(header => {
       header.addEventListener('click', () => {
         const bank = header.dataset.bank;
+        const targetId = header.dataset.target;
+        const wrap = document.getElementById(targetId);
+        const chevron = header.querySelector('.bank-chevron');
+        
         if (collapsedBanks.has(bank)) {
           collapsedBanks.delete(bank);
+          wrap.style.display = 'block';
+          header.style.borderBottom = '1px solid var(--border-color)';
+          if (chevron) chevron.style.transform = 'rotate(0)';
         } else {
           collapsedBanks.add(bank);
+          wrap.style.display = 'none';
+          header.style.borderBottom = 'none';
+          if (chevron) chevron.style.transform = 'rotate(-90deg)';
         }
-        renderPage();
       });
     });
 
@@ -313,15 +351,11 @@ export async function renderQuestionManager() {
   function showQuestionForm(existing = null) {
     const isEdit = !!existing;
     const hasMain = !!existing?.codeSnippetMain;
-    const existingTypes = [...new Set(questions.map(q => q.type).filter(Boolean))].sort();
-    if (existingTypes.length === 0) {
-      existingTypes.push('Predict Output', 'Select All That Apply', 'True / False', 'Conceptual');
-    }
 
     const formContent = document.createElement('div');
     formContent.innerHTML = `
       <datalist id="question-types-list">
-        ${existingTypes.map(t => `<option value="${escapeHtml(t)}"></option>`).join('')}
+        ${courseTypes.map(t => `<option value="${escapeHtml(t)}"></option>`).join('')}
       </datalist>
       <div style="display:flex;flex-direction:column;gap:1rem;">
         <div class="input-group">
@@ -642,6 +676,81 @@ export async function renderQuestionManager() {
     } catch (e) {
       showToast('Import error: ' + e.message, 'error');
     }
+  }
+  function showManageTypesModal() {
+    let tempTypes = [...courseTypes];
+    
+    function renderTypesList() {
+      return tempTypes.map((type, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 0.5rem;">
+          <span>${escapeHtml(type)}</span>
+          <button class="btn btn--ghost btn--icon btn-del-type" data-idx="${idx}" style="color:var(--error);" title="Remove Type">
+            ${getUiIcon('trash', 14)}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    const content = document.createElement('div');
+    content.innerHTML = `
+      <div style="margin-bottom: 1rem;">
+        <p class="text-muted" style="margin-bottom: 1rem;">Manage the types available in the Question Type dropdown. Questions currently using deleted types will retain their type until updated.</p>
+        <div id="types-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem;">
+          ${renderTypesList()}
+        </div>
+        <div style="display:flex; gap: 0.5rem;">
+          <input type="text" id="new-type-input" class="input" placeholder="New type name..." style="flex:1;" />
+          <button class="btn btn--secondary" id="btn-add-type">Add Type</button>
+        </div>
+      </div>
+    `;
+
+    showModal({
+      title: 'Manage Question Types',
+      content: content.innerHTML,
+      confirmText: 'Save Changes',
+      onOpen: (modalEl) => {
+        const listEl = modalEl.querySelector('#types-list');
+        const inputEl = modalEl.querySelector('#new-type-input');
+        const addBtn = modalEl.querySelector('#btn-add-type');
+
+        const attachTypeListeners = () => {
+          modalEl.querySelectorAll('.btn-del-type').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.currentTarget.dataset.idx, 10);
+              tempTypes.splice(idx, 1);
+              listEl.innerHTML = renderTypesList();
+              attachTypeListeners();
+            });
+          });
+        };
+        attachTypeListeners();
+
+        addBtn.addEventListener('click', () => {
+          const val = inputEl.value.trim();
+          if (val && !tempTypes.includes(val)) {
+            tempTypes.push(val);
+            tempTypes.sort();
+            inputEl.value = '';
+            listEl.innerHTML = renderTypesList();
+            attachTypeListeners();
+          }
+        });
+      },
+      onConfirm: async () => {
+        try {
+          const courseId = hostStore.state.activeCourseId;
+          if (courseId && courseId !== 'default') {
+            await updateCourse(courseId, { questionTypes: tempTypes });
+          }
+          courseTypes = tempTypes;
+          showToast('Question types updated', 'success');
+          renderPage();
+        } catch (e) {
+          showToast('Failed to update types: ' + e.message, 'error');
+        }
+      }
+    });
   }
 }
 

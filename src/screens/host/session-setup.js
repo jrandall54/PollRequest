@@ -76,13 +76,23 @@ export async function renderSessionSetup() {
               </div>
             ` : `
               <div class="session-setup__question-list" id="question-list">
-                ${banks.map(bank => {
+                ${banks.map((bank, bankIndex) => {
                   const isCollapsed = collapsedBanks.has(bank);
+                  const bankId = `bank-setup-${bankIndex}`;
+                  
+                  const typesMap = {};
+                  banksMap[bank].forEach(q => {
+                    const t = q.type || 'Uncategorized';
+                    if (!typesMap[t]) typesMap[t] = [];
+                    typesMap[t].push(q);
+                  });
+                  const sortedTypes = Object.keys(typesMap).sort();
+
                   return `
                   <div class="setup-bank-group" style="margin-bottom: 1.5rem;">
-                    <div class="bank-header" data-bank="${escapeHtml(bank)}" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-color); cursor:pointer; user-select:none;">
+                    <div class="bank-header" data-bank="${escapeHtml(bank)}" data-target="${bankId}" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-color); cursor:pointer; user-select:none;">
                       <div style="display:flex; align-items:center; gap:0.5rem;">
-                        <span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; transition:transform 0.2s; transform:${isCollapsed ? 'rotate(-90deg)' : 'rotate(0)'}; color:var(--text-secondary);">
+                        <span class="bank-chevron" style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; transition:transform 0.2s; transform:${isCollapsed ? 'rotate(-90deg)' : 'rotate(0)'}; color:var(--text-secondary);">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </span>
                         <h5 style="margin:0;">${escapeHtml(bank)} <span class="text-muted text-sm" style="font-weight:normal; margin-left:0.5rem;">(${banksMap[bank].length})</span></h5>
@@ -92,26 +102,30 @@ export async function renderSessionSetup() {
                         <button class="btn btn--ghost btn--sm btn-clear-bank-sel" data-bank="${escapeHtml(bank)}" onclick="event.stopPropagation()">Clear Bank</button>
                       </div>
                     </div>
-                    <div style="display:${isCollapsed ? 'none' : 'flex'};flex-direction:column;gap:0.5rem;padding-left:1.5rem;">
-                      ${banksMap[bank].map(q => `
-                        <label class="session-question-item" data-id="${q.id}" style="gap: 1rem; padding: 0.75rem 1rem;">
-                          <input type="checkbox" class="question-checkbox custom-checkbox" data-bank="${escapeHtml(bank)}" value="${q.id}" ${selectedIds.has(q.id) ? 'checked' : ''} />
-                          <div style="flex:1;display:flex;flex-direction:column;gap:0.25rem;">
-                            ${q.title ? `<span style="font-weight:700;font-size:1rem;color:var(--text-primary);">${escapeHtml(q.title)}</span>` : ''}
-                            <span class="session-question-item__text" style="font-weight:${q.title ? '400' : '500'};font-size:0.95rem;color:var(--text-primary);">
-                              ${escapeHtml(q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text)}
-                            </span>
-                            <div style="display:flex;gap:0.35rem;flex-wrap:wrap;margin-top:0.25rem;">
-                              ${q.type ? `<span class="badge badge--primary" style="font-size:0.7rem;">${escapeHtml(q.type)}</span>` : ''}
-                              ${(q.tags || []).map(t => `<span class="badge badge--neutral" style="font-size:0.7rem;">${escapeHtml(t)}</span>`).join('')}
-                              ${q.codeSnippet ? '<span class="badge badge--neutral" style="font-size:0.7rem;">&lt;/&gt; Code</span>' : ''}
+                    <div id="${bankId}" style="display:${isCollapsed ? 'none' : 'flex'};flex-direction:column;gap:0.5rem;padding-left:1.5rem;">
+                      ${sortedTypes.map(type => `
+                        <div style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+                          ${escapeHtml(type)}
+                        </div>
+                        ${typesMap[type].map(q => `
+                          <label class="session-question-item" data-id="${q.id}" style="gap: 1rem; padding: 0.75rem 1rem;">
+                            <input type="checkbox" class="question-checkbox custom-checkbox" data-bank="${escapeHtml(bank)}" value="${q.id}" ${selectedIds.has(q.id) ? 'checked' : ''} />
+                            <div style="flex:1;display:flex;flex-direction:column;gap:0.25rem;">
+                              ${q.title ? `<span style="font-weight:700;font-size:1rem;color:var(--text-primary);">${escapeHtml(q.title)}</span>` : ''}
+                              <span class="session-question-item__text" style="font-weight:${q.title ? '400' : '500'};font-size:0.95rem;color:var(--text-primary);">
+                                ${escapeHtml(q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text)}
+                              </span>
+                              <div style="display:flex;gap:0.35rem;flex-wrap:wrap;margin-top:0.25rem;">
+                                ${(q.tags || []).map(t => `<span class="badge badge--neutral" style="font-size:0.7rem;">${escapeHtml(t)}</span>`).join('')}
+                                ${q.codeSnippet ? '<span class="badge badge--neutral" style="font-size:0.7rem;">&lt;/&gt; Code</span>' : ''}
+                              </div>
                             </div>
-                          </div>
-                          <div class="session-question-item__meta">
-                            <span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span>
-                            <span class="text-muted text-sm">${q.timeLimit || 30}s</span>
-                          </div>
-                        </label>
+                            <div class="session-question-item__meta">
+                              <span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty || 'medium'}</span>
+                              <span class="text-muted text-sm">${q.timeLimit || 30}s</span>
+                            </div>
+                          </label>
+                        `).join('')}
                       `).join('')}
                     </div>
                   </div>
@@ -165,12 +179,21 @@ export async function renderSessionSetup() {
     document.querySelectorAll('.bank-header').forEach(header => {
       header.addEventListener('click', () => {
         const bank = header.dataset.bank;
+        const targetId = header.dataset.target;
+        const wrap = document.getElementById(targetId);
+        const chevron = header.querySelector('.bank-chevron');
+        
         if (collapsedBanks.has(bank)) {
           collapsedBanks.delete(bank);
+          wrap.style.display = 'flex';
+          header.style.borderBottom = '1px solid var(--border-color)';
+          if (chevron) chevron.style.transform = 'rotate(0)';
         } else {
           collapsedBanks.add(bank);
+          wrap.style.display = 'none';
+          header.style.borderBottom = 'none';
+          if (chevron) chevron.style.transform = 'rotate(-90deg)';
         }
-        renderView(); // Re-render to show collapsed/expanded state
       });
     });
 

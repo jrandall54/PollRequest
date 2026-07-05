@@ -5,11 +5,23 @@
 
 import { db } from '../firebase.js';
 import {
-  collection, doc, getDocs, addDoc, updateDoc,
+  collection, doc, getDocs, getDoc, addDoc, updateDoc,
   deleteDoc, query, orderBy, serverTimestamp
 } from 'firebase/firestore';
 
 const COLLECTION = 'courses';
+
+export async function getCourseById(courseId) {
+  try {
+    const docRef = doc(db, COLLECTION, courseId);
+    const snapshot = await getDoc(docRef);
+    if (!snapshot.exists()) return null;
+    return { id: snapshot.id, ...snapshot.data() };
+  } catch (error) {
+    console.error('Error fetching course:', error);
+    return null;
+  }
+}
 
 /**
  * Get all courses
