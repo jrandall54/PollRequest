@@ -12,7 +12,9 @@ import { showToast } from '../../utils/helpers.js';
 
 export async function renderProfileSetup(params) {
   const app = document.getElementById('app');
-  const sessionId = params.id;
+  const idRaw = params.id || '';
+  const sessionId = idRaw.split('?')[0];
+  const queryParams = idRaw.includes('?') ? new URLSearchParams(idRaw.split('?')[1]) : new URLSearchParams();
 
   if (!sessionId) {
     router.navigate('/player/join');
@@ -89,6 +91,25 @@ export async function renderProfileSetup(params) {
     joinBtn.disabled = !name || !selectedIcon;
   }
 
+  // Handle query errors
+  if (queryParams.get('error') === 'name_taken') {
+    showToast('Your name is already taken. Please pick another.', 'warning');
+  }
+
+  // Pre-fill if they are editing or have cached data
+  import('../../state.js').then(({ userStore }) => {
+    if (userStore.state.name && queryParams.get('error') !== 'name_taken') {
+      nameInput.value = userStore.state.name;
+    }
+    if (userStore.state.icon) {
+      // simulate click on icon
+      const iconBtn = document.querySelector(`.icon-btn[data-id="${userStore.state.icon}"]`);
+      if (iconBtn) iconBtn.click();
+    }
+    updatePreview();
+    updateJoinButton();
+  });
+
   // Join session
   joinBtn.addEventListener('click', async () => {
     const name = nameInput.value.trim();
@@ -109,7 +130,11 @@ export async function renderProfileSetup(params) {
 
       router.navigate(`/player/waiting/${sessionId}`);
     } catch (e) {
-      showToast('Failed to join: ' + e.message, 'error');
+      if (e.message === 'name_taken') {
+        showToast('This name is already taken. Please choose another.', 'error');
+      } else {
+        showToast('Failed to join: ' + e.message, 'error');
+      }
       joinBtn.disabled = false;
       joinBtn.textContent = 'Join Session';
     }

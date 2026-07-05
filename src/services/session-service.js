@@ -83,6 +83,21 @@ export async function findSessionByCode(joinCode) {
 export async function joinSession(sessionId, player) {
   try {
     const sessionRef = doc(db, COLLECTION, sessionId);
+    
+    // Check for duplicate names
+    const snapshot = await getDoc(sessionRef);
+    if (snapshot.exists()) {
+      const data = snapshot.data();
+      const players = data.players || {};
+      const duplicate = Object.entries(players).find(
+        ([uid, p]) => uid !== player.uid && p.name.toLowerCase() === player.name.toLowerCase()
+      );
+      
+      if (duplicate) {
+        throw new Error('name_taken');
+      }
+    }
+
     await updateDoc(sessionRef, {
       [`players.${player.uid}`]: {
         name: player.name,
