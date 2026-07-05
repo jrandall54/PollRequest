@@ -223,6 +223,10 @@ export async function renderPlayerGame(params) {
         correct: result.correct,
         responseTime: responseTimeMs,
         pointsEarned: scoring.points,
+        // Snapshot data for decoupled analytics
+        questionText: question.text || '',
+        questionCategory: question.category || 'general',
+        questionDifficulty: question.difficulty || 'medium'
       });
     } catch (e) {
       console.error('Failed to submit answer:', e);

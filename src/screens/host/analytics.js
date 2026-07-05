@@ -10,8 +10,8 @@ import {
   exportStudentsCsv, exportQuestionsCsv, exportSessionsCsv, exportAllDataJson
 } from '../../services/analytics-service.js';
 import { deleteStudent, deleteAllStudents } from '../../services/student-service.js';
-import { deleteSession, deleteAllSessions, getSessionResponses } from '../../services/session-service.js';
-import { deleteQuestion, deleteAllQuestions, getAllQuestions } from '../../services/question-service.js';
+import { deleteSession, deleteAllSessions, getSessionResponses, deleteQuestionAnalytics, deleteAllQuestionAnalytics } from '../../services/session-service.js';
+import { getAllQuestions } from '../../services/question-service.js';
 import { formatPercent, formatDate, showToast } from '../../utils/helpers.js';
 import { showModal } from '../../components/modal.js';
 
@@ -76,7 +76,7 @@ export async function renderAnalytics() {
           app.innerHTML = '<div class="flex-center screen"><div class="spinner"></div></div>';
           await deleteAllStudents();
           await deleteAllSessions();
-          await deleteAllQuestions();
+          await deleteAllQuestionAnalytics();
           showToast('Database wiped', 'success');
           router.navigate('/host/dashboard');
         } catch (e) {
@@ -295,20 +295,20 @@ export async function renderAnalytics() {
     document.getElementById('btn-clear-questions').addEventListener('click', () => {
       showModal({
         title: 'Clear All Questions?',
-        content: 'Are you sure you want to delete all questions? This will permanently remove them from the Question Bank.',
-        confirmText: 'Clear Questions',
+        content: 'Are you sure you want to clear historical analytics for all questions? This will wipe the report but leave your active Question Bank intact.',
+        confirmText: 'Clear Analytics',
         danger: true,
         onConfirm: async () => {
-          await deleteAllQuestions();
-          showToast('Questions cleared', 'success');
+          await deleteAllQuestionAnalytics();
+          showToast('Question analytics cleared', 'success');
           loadTab('questions');
         }
       });
     });
 
     attachDeleteListeners('questions-tbody', async (id) => {
-      await deleteQuestion(id);
-      showToast('Question deleted', 'success');
+      await deleteQuestionAnalytics(id);
+      showToast('Question analytics deleted', 'success');
       loadTab('questions');
     });
   }
@@ -333,7 +333,7 @@ export async function renderAnalytics() {
           <td>${(q.avgResponseTime / 1000).toFixed(1)}s</td>
           <td><span style="font-weight:700;color:var(--error);">${distractorStr}</span></td>
           <td>
-            <button class="btn btn--icon btn--ghost btn-delete-row" data-id="${q.id}" title="Delete Question">
+            <button class="btn btn--icon btn--ghost btn-delete-row" data-id="${q.id}" title="Clear Historical Analytics for this Question">
               <span style="color:var(--error);">${getUiIcon('trash', 16)}</span>
             </button>
           </td>

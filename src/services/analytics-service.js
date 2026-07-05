@@ -35,10 +35,9 @@ export async function getStudentAnalytics() {
 }
 
 /**
- * Get per-question analytics
+ * Get per-question analytics (Decoupled from Question Bank)
  */
 export async function getQuestionAnalytics() {
-  const questions = await getAllQuestions();
   const sessions = await getAllSessions();
 
   // Collect all responses across all sessions
@@ -50,7 +49,22 @@ export async function getQuestionAnalytics() {
     }
   }
 
-  return questions.map(q => {
+  // Build a master list of all unique questions ever played
+  const questionMap = new Map();
+  allResponses.forEach(r => {
+    if (!questionMap.has(r.questionId)) {
+      questionMap.set(r.questionId, {
+        id: r.questionId,
+        text: r.questionText || 'Unknown Question',
+        category: r.questionCategory || 'general',
+        difficulty: r.questionDifficulty || 'medium',
+      });
+    }
+  });
+
+  const uniqueQuestions = Array.from(questionMap.values());
+
+  return uniqueQuestions.map(q => {
     const qResponses = allResponses.filter(r => r.questionId === q.id);
     const totalAttempts = qResponses.length;
     const correctCount = qResponses.filter(r => r.correct).length;

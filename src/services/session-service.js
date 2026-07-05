@@ -249,6 +249,9 @@ export async function submitAnswer(sessionId, answerData) {
       correct: answerData.correct,
       responseTime: answerData.responseTime,
       pointsEarned: answerData.pointsEarned,
+      questionText: answerData.questionText || '',
+      questionCategory: answerData.questionCategory || 'general',
+      questionDifficulty: answerData.questionDifficulty || 'medium',
       answeredAt: serverTimestamp(),
     });
 
@@ -373,6 +376,47 @@ export async function deleteAllSessions() {
     }
   } catch (error) {
     console.error('Error deleting all sessions:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a specific question's historical analytics across all sessions
+ */
+export async function deleteQuestionAnalytics(questionId) {
+  const { deleteDoc } = await import('firebase/firestore');
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTION));
+    for (const sessionDoc of snapshot.docs) {
+      const sessionId = sessionDoc.id;
+      const responsesRef = collection(db, COLLECTION, sessionId, 'responses');
+      const q = query(responsesRef, where('questionId', '==', questionId));
+      const responsesSnap = await getDocs(q);
+      const deletePromises = responsesSnap.docs.map(d => deleteDoc(doc(db, COLLECTION, sessionId, 'responses', d.id)));
+      await Promise.all(deletePromises);
+    }
+  } catch (error) {
+    console.error('Error deleting question analytics:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete all questions' historical analytics across all sessions
+ */
+export async function deleteAllQuestionAnalytics() {
+  const { deleteDoc } = await import('firebase/firestore');
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTION));
+    for (const sessionDoc of snapshot.docs) {
+      const sessionId = sessionDoc.id;
+      const responsesRef = collection(db, COLLECTION, sessionId, 'responses');
+      const responsesSnap = await getDocs(responsesRef);
+      const deletePromises = responsesSnap.docs.map(d => deleteDoc(doc(db, COLLECTION, sessionId, 'responses', d.id)));
+      await Promise.all(deletePromises);
+    }
+  } catch (error) {
+    console.error('Error deleting all question analytics:', error);
     throw error;
   }
 }
