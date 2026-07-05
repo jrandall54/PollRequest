@@ -389,15 +389,15 @@
 
 /* Projector-sized answer buttons (host view) */
 .answer-btn--projector {
-  padding: 0.5rem 1rem;
-  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
-  border-radius: var(--radius-md);
+  padding: 0.875rem 1.25rem;
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  border-radius: var(--radius-lg);
 }
 
 .answer-btn--projector .answer-btn__label {
-  width: 1.75rem;
-  height: 1.75rem;
-  font-size: 0.9rem;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1rem;
 }
 
 /* ── Player Identity Display ────────────────────────────────── */
