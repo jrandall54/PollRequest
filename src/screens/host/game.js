@@ -80,10 +80,20 @@ export async function renderHostGame(params) {
     app.innerHTML = `
       <div class="question-screen screen">
         <div class="question-screen__header">
-          <div class="question-screen__progress">
+          <div class="question-screen__progress" style="display:flex;align-items:center;gap:0.75rem;">
             Question ${qIdx + 1} of ${total}
-            ${question.category ? `<span class="badge badge--primary question-screen__category" style="margin-left:0.5rem;">${question.category}</span>` : ''}
+            ${question.category ? `<span class="badge badge--primary question-screen__category">${question.category}</span>` : ''}
           </div>
+
+          <div style="display:flex;gap:0.75rem;align-items:center;">
+            <button class="btn btn--secondary btn--sm" id="btn-pause" style="padding:0.5rem 0.75rem;font-size:0.875rem;">
+              ${getUiIcon('pause', 16)} Pause
+            </button>
+            <button class="btn btn--primary btn--sm" id="btn-show-results" style="padding:0.5rem 0.75rem;font-size:0.875rem;">
+              Skip to Results
+            </button>
+          </div>
+
           <div style="display:flex;align-items:center;gap:1rem;">
             <span class="text-muted text-sm" id="response-count">0 / 0 answered</span>
             <div id="timer-container"></div>
@@ -126,13 +136,6 @@ export async function renderHostGame(params) {
           </div>
         </div>
 
-        <div style="position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.75rem; z-index: 100;">
-          <button class="btn btn--secondary" id="btn-pause" style="padding: 0.625rem 1rem; font-size: 0.875rem;">
-            ${getUiIcon('pause', 16)} Pause
-          </button>
-          <button class="btn btn--primary" id="btn-show-results" style="padding: 0.625rem 1rem; font-size: 0.875rem;">
-            Skip to Results
-          </button>
         </div>
       </div>
     `;
@@ -240,10 +243,24 @@ export async function renderHostGame(params) {
       <div class="results-screen screen">
         <div style="width:100%;max-width:1100px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-            <h2>Results - Question ${qIdx + 1}</h2>
-            <span class="badge ${accuracy >= 70 ? 'badge--success' : accuracy >= 40 ? 'badge--warning' : 'badge--error'}">
-              ${accuracy}% correct
-            </span>
+            <div style="display:flex;align-items:center;gap:1rem;">
+              <h2>Results - Question ${qIdx + 1}</h2>
+              <span class="badge ${accuracy >= 70 ? 'badge--success' : accuracy >= 40 ? 'badge--warning' : 'badge--error'}">
+                ${accuracy}% correct
+              </span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              ${isLast ? `
+                <button class="btn btn--primary btn--sm" id="btn-final-podium" style="padding:0.5rem 0.75rem;font-size:0.875rem;">
+                  ${getUiIcon('trophy', 16)} Show Final Results
+                </button>
+              ` : `
+                <button class="btn btn--primary btn--sm" id="btn-next-question" style="padding:0.5rem 0.75rem;font-size:0.875rem;">
+                  Next Question ${getUiIcon('skip', 16)}
+                </button>
+              `}
+            </div>
           </div>
 
           <div class="question-text" style="font-size:1.25rem;margin-bottom:1rem;text-align:left;">
@@ -289,18 +306,6 @@ export async function renderHostGame(params) {
               <strong>Explanation:</strong> ${escapeHtml(question.explanation)}
             </div>
           ` : ''}
-
-          <div style="position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.75rem; z-index: 100;">
-            ${isLast ? `
-              <button class="btn btn--primary" id="btn-final-podium" style="padding: 0.75rem 1.25rem; font-size: 1rem; box-shadow: var(--shadow-lg);">
-                ${getUiIcon('trophy', 20)} Show Final Results
-              </button>
-            ` : `
-              <button class="btn btn--primary" id="btn-next-question" style="padding: 0.75rem 1.25rem; font-size: 1rem; box-shadow: var(--shadow-lg);">
-                Next Question ${getUiIcon('skip', 20)}
-              </button>
-            `}
-          </div>
         </div>
       </div>
     `;

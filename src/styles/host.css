@@ -188,11 +188,11 @@
 }
 
 .question-text {
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-size: clamp(1.1rem, 3.5vh, 1.75rem);
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
-  max-height: 80px;
+  max-height: 15vh;
   overflow-y: auto;
 }
 
@@ -204,9 +204,9 @@
 
 .question-code-wrap pre,
 .question-code-wrap code {
-  font-size: clamp(0.85rem, 1.5vw, 1.25rem) !important;
+  font-size: clamp(0.75rem, 1.8vh, 1.25rem) !important;
   line-height: 1.5 !important;
-  padding: 1rem !important; /* Balanced padding inside the code block */
+  padding: clamp(0.5rem, 1.5vh, 1rem) !important; /* Balanced padding inside the code block */
   white-space: pre-wrap !important; /* Wrap long lines instead of horizontal scroll */
   overflow: hidden !important; /* Prevent internal scrollbars */
 }
