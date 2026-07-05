@@ -87,6 +87,9 @@ function parseJsonQuestions(content) {
     const questions = Array.isArray(data) ? data : [data];
 
     return questions.map(q => ({
+      title: q.title || null,
+      type: q.type || 'Predict Output',
+      tags: q.tags || [],
       text: q.text || '',
       codeSnippet: q.codeSnippet || null,
       codeSnippetMain: q.codeSnippetMain || null,
