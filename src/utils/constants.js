@@ -333,7 +333,7 @@ export const ICONS = {
 `
   },
   fox: {
-    name: 'Squirrel',
+    name: 'Pig',
     category: 'animal',
     svg: `
 <svg
@@ -348,10 +348,9 @@ export const ICONS = {
   stroke-linecap="round"
   stroke-linejoin="round"
 >
-  <path d="M15.236 22a3 3 0 0 0-2.2-5" />
-  <path d="M16 20a3 3 0 0 1 3-3h1a2 2 0 0 0 2-2v-2a4 4 0 0 0-4-4V4" />
-  <path d="M18 13h.01" />
-  <path d="M18 6a4 4 0 0 0-4 4 7 7 0 0 0-7 7c0-5 4-5 4-10.5a4.5 4.5 0 1 0-9 0 2.5 2.5 0 0 0 5 0C7 10 3 11 3 17c0 2.8 2.2 5 5 5h10" />
+  <path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z" />
+  <path d="M16 10h.01" />
+  <path d="M2 8v1a2 2 0 0 0 2 2h1" />
 </svg>
 `
   },
@@ -520,7 +519,7 @@ export const ICONS = {
 `
   },
   rat: {
-    name: 'Mouse',
+    name: 'Feather',
     category: 'animal',
     svg: `
 <svg
@@ -535,11 +534,9 @@ export const ICONS = {
   stroke-linecap="round"
   stroke-linejoin="round"
 >
-  <path d="M13 22H4a2 2 0 0 1 0-4h12" />
-  <path d="M13.236 18a3 3 0 0 0-2.2-5" />
-  <path d="M16 9h.01" />
-  <path d="M16.82 3.94a3 3 0 1 1 3.237 4.868l1.815 2.587a1.5 1.5 0 0 1-1.5 2.1l-2.872-.453a3 3 0 0 0-3.5 3" />
-  <path d="M17 4.988a3 3 0 1 0-5.2 2.052A7 7 0 0 0 4 14.015 4 4 0 0 0 8 18" />
+  <path d="M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z" />
+  <path d="M16 8 2 22" />
+  <path d="M17.5 15H9" />
 </svg>
 `
   },
@@ -568,7 +565,7 @@ export const ICONS = {
 `
   },
   worm: {
-    name: 'Worm',
+    name: 'Bone',
     category: 'animal',
     svg: `
 <svg
@@ -583,9 +580,7 @@ export const ICONS = {
   stroke-linecap="round"
   stroke-linejoin="round"
 >
-  <path d="m19 12-1.5 3" />
-  <path d="M19.63 18.81 22 20" />
-  <path d="M6.47 8.23a1.68 1.68 0 0 1 2.44 1.93l-.64 2.08a6.76 6.76 0 0 0 10.16 7.67l.42-.27a1 1 0 1 0-2.73-4.21l-.42.27a1.76 1.76 0 0 1-2.63-1.99l.64-2.08A6.66 6.66 0 0 0 3.94 3.9l-.7.4a1 1 0 1 0 2.55 4.34z" />
+  <path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z" />
 </svg>
 `
   },
