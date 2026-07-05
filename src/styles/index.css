@@ -6,9 +6,9 @@
 @import './themes.css';
 @import './components.css';
 @import './animations.css';
+@import './prism-override.css';
 @import './host.css';
 @import './player.css';
-@import './prism-override.css';
 
 /* ── Reset ──────────────────────────────────────────────────── */
 *,
