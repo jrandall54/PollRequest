@@ -122,11 +122,11 @@ export async function renderProfileSetup(params) {
       // Authenticate anonymously
       const uid = await initAuth();
 
-      // Save profile
-      await saveProfile(uid, { name, icon: selectedIcon });
-
-      // Join the session
+      // Join the session FIRST to validate name uniqueness
       await joinSession(sessionId, { uid, name, icon: selectedIcon });
+
+      // Save profile only if join was successful
+      await saveProfile(uid, { name, icon: selectedIcon });
 
       router.navigate(`/player/waiting/${sessionId}`);
     } catch (e) {

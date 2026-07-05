@@ -44,10 +44,6 @@ export function renderLanding() {
             </div>
           </button>
         </div>
-
-        <div class="landing-footer">
-          <span class="text-muted text-sm">Built with care for CS classrooms</span>
-        </div>
       </div>
     </div>
   `;
@@ -71,7 +67,8 @@ function injectLandingStyles() {
   style.id = 'landing-styles';
   style.textContent = `
     .landing-screen {
-      min-height: 100vh;
+      height: 100vh;
+      height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;

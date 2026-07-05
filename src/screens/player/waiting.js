@@ -39,8 +39,10 @@ export async function renderWaiting(params) {
       try {
         const uid = await initAuth();
         identity.uid = uid;
-        await saveProfile(uid, { name: identity.name, icon: identity.icon });
+        // Join session first to validate name uniqueness
         await joinSession(sessionId, { uid, name: identity.name, icon: identity.icon });
+        // Save profile only if join was successful
+        await saveProfile(uid, { name: identity.name, icon: identity.icon });
       } catch (e) {
         console.warn('Could not rejoin session:', e);
         if (e.message === 'name_taken') {

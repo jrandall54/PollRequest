@@ -399,9 +399,11 @@ export async function renderAnalytics() {
   function generateSessionsRows(data) {
     return data.map(s => `
       <tr class="session-row" data-id="${s.id}" style="cursor:pointer;" title="Click to expand question details">
-        <td style="font-weight:600;display:flex;align-items:center;gap:0.5rem;" class="session-expand-cell">
-          <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          ${escapeHtml(s.name)}
+        <td class="session-expand-cell">
+          <div style="font-weight:600;display:flex;align-items:center;gap:0.5rem;">
+            <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            ${escapeHtml(s.name)}
+          </div>
         </td>
         <td><span class="badge ${s.status === 'ended' ? 'badge--success' : 'badge--warning'}">${s.status}</span></td>
         <td>${formatDate(s.date)}</td>
