@@ -36,26 +36,24 @@ export async function renderPlayerJoin() {
           autocapitalize="characters"
           spellcheck="false"
         />
-        <button class="btn btn--primary btn--lg btn--full" id="btn-join">
-          Join Session
-        </button>
-        <div id="join-error" class="text-center" style="color:var(--error);font-size:0.875rem;min-height:1.25rem;"></div>
+        ${saved ? `
+          <button class="btn btn--primary btn--lg btn--full" id="btn-join-saved">
+            Continue as ${escapeHtml(saved.name)}
+          </button>
+          <button class="btn btn--secondary btn--lg btn--full" id="btn-join-new" style="margin-top:0.75rem;">
+            Join as someone else
+          </button>
+        ` : `
+          <button class="btn btn--primary btn--lg btn--full" id="btn-join">
+            Join Session
+          </button>
+        `}
+        <div id="join-error" class="text-center" style="color:var(--error);font-size:0.875rem;min-height:1.25rem;margin-top:0.5rem;"></div>
       </div>
-
-      ${saved ? `
-        <div style="margin-top:1.5rem;text-align:center;">
-          <span class="text-muted text-sm">Rejoining as</span>
-          <div class="player-badge player-badge--lg" style="margin-top:0.5rem;display:inline-flex;">
-            <span class="player-badge__icon">${getIconSvgSafe(saved.icon, 24)}</span>
-            <span>${escapeHtml(saved.name)}</span>
-          </div>
-        </div>
-      ` : ''}
     </div>
   `;
 
   const codeInput = document.getElementById('join-code');
-  const joinBtn = document.getElementById('btn-join');
   const errorEl = document.getElementById('join-error');
 
   // Auto-uppercase and filter input
@@ -65,23 +63,27 @@ export async function renderPlayerJoin() {
   });
 
   // Join session
-  async function handleJoin() {
+  async function handleJoin(mode = 'default') {
     const code = codeInput.value.trim().toUpperCase();
     if (!code || code.length < 4) {
       errorEl.textContent = 'Please enter a valid code';
       return;
     }
 
-    joinBtn.disabled = true;
-    joinBtn.innerHTML = '<div class="spinner spinner--sm"></div> Joining...';
+    const btns = document.querySelectorAll('.join-screen__form .btn');
+    btns.forEach(b => {
+      b.disabled = true;
+      if (b.classList.contains('btn--primary')) {
+        b.innerHTML = '<div class="spinner spinner--sm"></div> Joining...';
+      }
+    });
     errorEl.textContent = '';
 
     try {
       const session = await findSessionByCode(code);
       if (!session) {
         errorEl.textContent = 'Session not found. Check the code and try again.';
-        joinBtn.disabled = false;
-        joinBtn.textContent = 'Join Session';
+        renderButtons(); // restore buttons
         return;
       }
 
@@ -89,22 +91,54 @@ export async function renderPlayerJoin() {
       sessionStorage.setItem('pollrequest_session', session.id);
       sessionStorage.setItem('pollrequest_join_code', code);
 
-      // If player has a saved identity, go straight to waiting
-      if (saved) {
+      if (mode === 'saved') {
         router.navigate(`/player/waiting/${session.id}`);
+      } else if (mode === 'new') {
+        // Clear cached identity locally to force a new one
+        localStorage.removeItem('pollrequest_uid');
+        localStorage.removeItem('pollrequest_name');
+        localStorage.removeItem('pollrequest_icon');
+        // We do NOT clear userStore here because it will be handled by profile-setup / waiting logic,
+        // but we can just route to profile screen to set up a new identity
+        router.navigate(`/player/profile/${session.id}`);
       } else {
         router.navigate(`/player/profile/${session.id}`);
       }
     } catch (e) {
       errorEl.textContent = 'Connection error. Please try again.';
-      joinBtn.disabled = false;
-      joinBtn.textContent = 'Join Session';
+      renderButtons();
     }
   }
 
-  joinBtn.addEventListener('click', handleJoin);
+  function renderButtons() {
+    if (saved) {
+      const btnSaved = document.getElementById('btn-join-saved');
+      if (btnSaved) {
+        btnSaved.disabled = false;
+        btnSaved.textContent = `Continue as ${saved.name}`;
+      }
+      const btnNew = document.getElementById('btn-join-new');
+      if (btnNew) {
+        btnNew.disabled = false;
+      }
+    } else {
+      const btnJoin = document.getElementById('btn-join');
+      if (btnJoin) {
+        btnJoin.disabled = false;
+        btnJoin.textContent = 'Join Session';
+      }
+    }
+  }
+
+  if (saved) {
+    document.getElementById('btn-join-saved').addEventListener('click', () => handleJoin('saved'));
+    document.getElementById('btn-join-new').addEventListener('click', () => handleJoin('new'));
+  } else {
+    document.getElementById('btn-join').addEventListener('click', () => handleJoin('default'));
+  }
+
   codeInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleJoin();
+    if (e.key === 'Enter') handleJoin(saved ? 'saved' : 'default');
   });
 
   // Back button

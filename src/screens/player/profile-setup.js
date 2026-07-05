@@ -121,8 +121,8 @@ export async function renderProfileSetup(params) {
 
     try {
       // Authenticate anonymously (get current browser session UID)
-      let currentUid = await initAuth();
-      let uid = currentUid;
+      const browserUid = await initAuth();
+      let uid = browserUid;
 
       // Check if this exact name + icon pair already exists in the database
       // If so, we "reclaim" that profile (act as a low-security login)
@@ -135,9 +135,12 @@ export async function renderProfileSetup(params) {
         uid = await forceNewIdentity();
       }
 
+      // The true joined UID is what was sitting in userStore, OR the browser UID if first time.
+      const trueJoinedUid = userStore.state.uid || browserUid;
+
       // If the UID changed, we need to leave the session with the old UID so we don't leave a ghost in the lobby
-      if (uid !== currentUid) {
-        await leaveSession(sessionId, currentUid);
+      if (uid !== trueJoinedUid) {
+        await leaveSession(sessionId, trueJoinedUid);
       }
 
       // Join the session FIRST to validate name uniqueness
