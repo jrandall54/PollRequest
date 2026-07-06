@@ -55,7 +55,8 @@ export async function getQuestionAnalytics(courseId = 'all') {
   // Build a master list of all unique questions ever played
   const questionMap = new Map();
   allResponses.forEach(r => {
-    if (!questionMap.has(r.questionId)) {
+    const existing = questionMap.get(r.questionId);
+    if (!existing || (r.questionChoices && r.questionChoices.length > 0 && (!existing.choices || existing.choices.length === 0))) {
       questionMap.set(r.questionId, {
         id: r.questionId,
         text: r.questionText || 'Unknown Question',
@@ -64,6 +65,9 @@ export async function getQuestionAnalytics(courseId = 'all') {
         tags: r.questionTags || [],
         bank: r.questionBank || 'Custom Questions',
         difficulty: r.questionDifficulty || 'medium',
+        choices: r.questionChoices || [],
+        codeSnippet: r.questionCodeSnippet || null,
+        explanation: r.questionExplanation || null,
       });
     }
   });
@@ -78,16 +82,47 @@ export async function getQuestionAnalytics(courseId = 'all') {
       ? Math.round(qResponses.reduce((sum, r) => sum + (r.responseTime || 0), 0) / totalAttempts)
       : 0;
 
-    // Find most common wrong answer
+    // Find most common wrong answer index (legacy)
     const wrongAnswers = qResponses
       .filter(r => !r.correct)
       .map(r => r.selectedChoices?.join(','));
     const wrongCounts = {};
     wrongAnswers.forEach(a => {
-      wrongCounts[a] = (wrongCounts[a] || 0) + 1;
+      if (a !== undefined) wrongCounts[a] = (wrongCounts[a] || 0) + 1;
     });
     const mostCommonWrong = Object.entries(wrongCounts)
       .sort(([, a], [, b]) => b - a)[0];
+
+    // Find most common wrong answer TEXT (new)
+    const wrongAnswersText = qResponses
+      .filter(r => !r.correct)
+      .map(r => r.selectedChoiceTexts?.join(' & '));
+    const wrongCountsText = {};
+    wrongAnswersText.forEach(a => {
+      if (a) wrongCountsText[a] = (wrongCountsText[a] || 0) + 1;
+    });
+    const mostCommonWrongText = Object.entries(wrongCountsText)
+      .sort(([, a], [, b]) => b - a)[0];
+
+    // Calculate choice distribution
+    const choiceDistribution = {};
+    if (q.choices) {
+      q.choices.forEach(c => choiceDistribution[c.text] = 0);
+    }
+    qResponses.forEach(r => {
+      if (r.selectedChoiceTexts && r.selectedChoiceTexts.length > 0) {
+        r.selectedChoiceTexts.forEach(txt => {
+          choiceDistribution[txt] = (choiceDistribution[txt] || 0) + 1;
+        });
+      } else if (r.selectedChoices && q.choices && q.choices.length > 0) { // Legacy fallback
+        r.selectedChoices.forEach(idx => {
+          const txt = q.choices[idx]?.text;
+          if (txt) {
+             choiceDistribution[txt] = (choiceDistribution[txt] || 0) + 1;
+          }
+        });
+      }
+    });
 
     return {
       id: q.id,
@@ -97,10 +132,15 @@ export async function getQuestionAnalytics(courseId = 'all') {
       tags: q.tags,
       bank: q.bank,
       difficulty: q.difficulty,
+      codeSnippet: q.codeSnippet,
+      explanation: q.explanation,
+      choices: q.choices,
+      choiceDistribution,
       totalAttempts,
       correctRate: totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0,
       avgResponseTime: avgTime,
       mostCommonWrongAnswer: mostCommonWrong ? mostCommonWrong[0] : null,
+      mostCommonWrongAnswerText: mostCommonWrongText ? mostCommonWrongText[0] : null,
     };
   }).sort((a, b) => a.correctRate - b.correctRate); // Hardest first
 }

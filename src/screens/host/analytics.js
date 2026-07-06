@@ -332,16 +332,106 @@ export async function renderAnalytics() {
       showToast('Question analytics deleted', 'success');
       loadTab('questions');
     });
+
+    attachQuestionRowListeners();
   }
+
+  function attachQuestionRowListeners() {
+    document.querySelectorAll('.question-row').forEach(row => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-delete-row')) return;
+        const qId = row.dataset.id;
+        const q = currentData.find(d => d.id === qId);
+        if (q) showItemAnalysisModal(q);
+      });
+    });
+  }
+
+  function showItemAnalysisModal(q) {
+    // Generate bar chart for choice distribution
+    let distributionHtml = '<div class="text-muted text-center" style="padding:2rem;">No distribution data available</div>';
+    
+    if (q.choiceDistribution && Object.keys(q.choiceDistribution).length > 0) {
+      const maxCount = Math.max(...Object.values(q.choiceDistribution));
+      distributionHtml = '<div style="display:flex;flex-direction:column;gap:0.75rem;">' + 
+        Object.entries(q.choiceDistribution).sort(([,a], [,b]) => b - a).map(([text, count]) => {
+          const percentage = q.totalAttempts > 0 ? Math.round((count / q.totalAttempts) * 100) : 0;
+          const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
+          const isCorrect = q.choices ? q.choices.some(c => c.text === text && c.isCorrect) : false;
+          
+          return `
+            <div style="display:flex;flex-direction:column;gap:0.25rem;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;font-size:0.85rem;">
+                <div style="font-weight:600;display:flex;align-items:center;gap:0.35rem;">
+                  ${isCorrect ? '<span style="color:var(--success);">' + getUiIcon('check', 14) + '</span>' : ''}
+                  ${escapeHtml(text)}
+                </div>
+                <div class="text-muted">${count} picks (${percentage}%)</div>
+              </div>
+              <div style="width:100%;height:8px;background:var(--border-color);border-radius:4px;overflow:hidden;">
+                <div style="height:100%;width:${barWidth}%;background:${isCorrect ? 'var(--success)' : 'var(--error)'};border-radius:4px;transition:width 0.5s ease-out;"></div>
+              </div>
+            </div>
+          `;
+        }).join('') + '</div>';
+    }
+
+    const contentHtml = `
+      <div style="display:flex;flex-direction:column;gap:1.5rem;">
+        
+        <div style="padding:1rem;background:var(--bg-tertiary);border-radius:8px;border:1px solid var(--border-color);">
+          ${q.title ? `<h4 style="margin:0 0 0.5rem 0;font-size:1.1rem;">${escapeHtml(q.title)}</h4>` : ''}
+          <div style="font-size:1rem;font-weight:500;">${escapeHtml(q.text)}</div>
+          ${q.codeSnippet ? `
+            <pre style="margin-top:1rem;background:var(--bg-primary);padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.85rem;"><code class="language-java">${escapeHtml(q.codeSnippet)}</code></pre>
+          ` : ''}
+        </div>
+
+        <div>
+          <h4 style="margin:0 0 1rem 0;font-size:0.9rem;text-transform:uppercase;color:var(--text-secondary);letter-spacing:0.5px;">Response Distribution</h4>
+          ${distributionHtml}
+        </div>
+
+        ${q.explanation ? `
+          <div>
+            <h4 style="margin:0 0 0.5rem 0;font-size:0.9rem;text-transform:uppercase;color:var(--text-secondary);letter-spacing:0.5px;">Explanation / Key</h4>
+            <div style="padding:1rem;background:rgba(59, 130, 246, 0.1);border-left:4px solid var(--primary);border-radius:4px;font-size:0.9rem;color:var(--text-primary);line-height:1.5;">
+              ${escapeHtml(q.explanation)}
+            </div>
+          </div>
+        ` : ''}
+        
+      </div>
+    `;
+
+    showModal({
+      title: 'Item Analysis',
+      content: contentHtml,
+      confirmText: 'Close',
+      onConfirm: () => {}
+    });
+    
+    // Highlight code if present
+    if (window.Prism) {
+      setTimeout(() => {
+        document.querySelectorAll('.modal-overlay pre code').forEach((block) => {
+          window.Prism.highlightElement(block);
+        });
+      }, 50);
+    }
+  }
+
 
   function generateQuestionsRows(data) {
     return data.map(q => {
       let distractorStr = '-';
-      if (q.mostCommonWrongAnswer) {
+      if (q.mostCommonWrongAnswerText) {
+        distractorStr = escapeHtml(q.mostCommonWrongAnswerText.length > 30 ? q.mostCommonWrongAnswerText.substring(0, 30) + '...' : q.mostCommonWrongAnswerText);
+      } else if (q.mostCommonWrongAnswer) {
         distractorStr = q.mostCommonWrongAnswer.split(',').map(idx => ANSWER_LABELS[parseInt(idx)]).join(' & ');
       }
       return `
-        <tr>
+        <tr class="question-row" data-id="${q.id}" style="cursor:pointer;" title="Click for Detailed Item Analysis">
           <td>
             ${q.title ? `<div style="font-weight:700;font-size:1rem;margin-bottom:0.25rem;">${escapeHtml(q.title)}</div>` : ''}
             <div style="font-weight:${q.title ? '400' : '500'};font-size:0.95rem;">${escapeHtml(q.text.length > 50 ? q.text.substring(0, 50) + '...' : q.text)}</div>

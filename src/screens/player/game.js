@@ -234,7 +234,11 @@ export async function renderPlayerGame(params) {
         questionType: question.type || 'Predict Output',
         questionTags: question.tags || [],
         questionBank: question.bank || 'Custom Questions',
-        questionDifficulty: question.difficulty || 'medium'
+        questionDifficulty: question.difficulty || 'medium',
+        selectedChoiceTexts: choices.map(idx => question.choices[idx]?.text || ''),
+        questionChoices: question.choices || [],
+        questionCodeSnippet: question.codeSnippet || null,
+        questionExplanation: question.explanation || null
       });
     } catch (e) {
       console.error('Failed to submit answer:', e);

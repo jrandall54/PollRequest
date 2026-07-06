@@ -287,6 +287,10 @@ export async function submitAnswer(sessionId, answerData) {
       questionTags: answerData.questionTags || [],
       questionBank: answerData.questionBank || 'Custom Questions',
       questionDifficulty: answerData.questionDifficulty || 'medium',
+      selectedChoiceTexts: answerData.selectedChoiceTexts || [],
+      questionChoices: answerData.questionChoices || [],
+      questionCodeSnippet: answerData.questionCodeSnippet || null,
+      questionExplanation: answerData.questionExplanation || null,
       answeredAt: serverTimestamp(),
     });
 
