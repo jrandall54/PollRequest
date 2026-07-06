@@ -295,7 +295,8 @@ export async function renderAnalytics() {
           <thead>
             <tr>
               <th data-sort="text" style="width:40%;">Question ↕</th>
-              <th data-sort="category">Category ↕</th>
+              <th data-sort="type">Type ↕</th>
+              <th data-sort="bank">Sub-Bank ↕</th>
               <th data-sort="difficulty">Difficulty ↕</th>
               <th data-sort="totalAttempts">Attempts ↕</th>
               <th data-sort="correctRate">Correct Rate ↕</th>
@@ -341,8 +342,13 @@ export async function renderAnalytics() {
       }
       return `
         <tr>
-          <td style="font-weight:500;">${escapeHtml(q.text.length > 50 ? q.text.substring(0, 50) + '...' : q.text)}</td>
-          <td><span class="badge badge--primary">${q.category || 'general'}</span></td>
+          <td>
+            ${q.title ? `<div style="font-weight:700;font-size:1rem;margin-bottom:0.25rem;">${escapeHtml(q.title)}</div>` : ''}
+            <div style="font-weight:${q.title ? '400' : '500'};font-size:0.95rem;">${escapeHtml(q.text.length > 50 ? q.text.substring(0, 50) + '...' : q.text)}</div>
+            ${q.tags?.length > 0 ? `<div style="margin-top:0.35rem;display:flex;gap:0.25rem;flex-wrap:wrap;">${q.tags.map(t => `<span class="badge badge--neutral" style="font-size:0.7rem;">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+          </td>
+          <td><span class="badge badge--primary" style="background:var(--primary-alpha);color:var(--primary);">${escapeHtml(q.type || 'Predict Output')}</span></td>
+          <td><span class="badge badge--neutral">${escapeHtml(q.bank || 'Custom Questions')}</span></td>
           <td><span class="badge ${q.difficulty === 'easy' ? 'badge--success' : q.difficulty === 'hard' ? 'badge--error' : 'badge--warning'}">${q.difficulty}</span></td>
           <td>${q.totalAttempts}</td>
           <td>

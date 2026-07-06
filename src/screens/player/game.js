@@ -230,7 +230,10 @@ export async function renderPlayerGame(params) {
         pointsEarned: scoring.points,
         // Snapshot data for decoupled analytics
         questionText: question.text || '',
-        questionCategory: question.category || 'general',
+        questionTitle: question.title || null,
+        questionType: question.type || 'Predict Output',
+        questionTags: question.tags || [],
+        questionBank: question.bank || 'Custom Questions',
         questionDifficulty: question.difficulty || 'medium'
       });
     } catch (e) {

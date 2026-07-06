@@ -59,7 +59,10 @@ export async function getQuestionAnalytics(courseId = 'all') {
       questionMap.set(r.questionId, {
         id: r.questionId,
         text: r.questionText || 'Unknown Question',
-        category: r.questionCategory || 'general',
+        title: r.questionTitle || null,
+        type: r.questionType || 'Predict Output',
+        tags: r.questionTags || [],
+        bank: r.questionBank || 'Custom Questions',
         difficulty: r.questionDifficulty || 'medium',
       });
     }
@@ -89,7 +92,10 @@ export async function getQuestionAnalytics(courseId = 'all') {
     return {
       id: q.id,
       text: q.text,
-      category: q.category,
+      title: q.title,
+      type: q.type,
+      tags: q.tags,
+      bank: q.bank,
       difficulty: q.difficulty,
       totalAttempts,
       correctRate: totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0,
@@ -176,7 +182,7 @@ export async function exportStudentsCsv() {
 export async function exportQuestionsCsv() {
   const questions = await getQuestionAnalytics();
   const csv = arrayToCsv(questions, [
-    'text', 'category', 'difficulty', 'totalAttempts',
+    'title', 'text', 'type', 'bank', 'tags', 'difficulty', 'totalAttempts',
     'correctRate', 'avgResponseTime',
   ]);
   downloadFile(csv, `pollrequest-questions-${Date.now()}.csv`);

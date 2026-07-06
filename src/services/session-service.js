@@ -282,7 +282,10 @@ export async function submitAnswer(sessionId, answerData) {
       responseTime: answerData.responseTime,
       pointsEarned: answerData.pointsEarned,
       questionText: answerData.questionText || '',
-      questionCategory: answerData.questionCategory || 'general',
+      questionTitle: answerData.questionTitle || null,
+      questionType: answerData.questionType || 'Predict Output',
+      questionTags: answerData.questionTags || [],
+      questionBank: answerData.questionBank || 'Custom Questions',
       questionDifficulty: answerData.questionDifficulty || 'medium',
       answeredAt: serverTimestamp(),
     });
